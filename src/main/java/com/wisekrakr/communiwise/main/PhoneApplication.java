@@ -1,6 +1,7 @@
 package com.wisekrakr.communiwise.main;
 
 
+import com.wisekrakr.communiwise.gui.EventManager;
 import com.wisekrakr.communiwise.operations.DeviceImplementations;
 import com.wisekrakr.communiwise.phone.audio.AudioManager;
 import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
@@ -17,6 +18,8 @@ public class PhoneApplication implements Serializable {
     private static final AudioFormat FORMAT = new AudioFormat(16000, 16, 1, true, true);
 
     private RTPConnectionManager rtpConnectionManager;
+    private EventManager eventManager;
+    private SipAccountManager accountManager;
 
     private static void printHelp(String message) {
         System.out.println(message);
@@ -37,6 +40,8 @@ public class PhoneApplication implements Serializable {
             System.exit(1);
         }
 
+        System.out.println(" =======>< CommUniWise activated ><======= ");
+
 
         PhoneApplication application = new PhoneApplication();
 
@@ -55,6 +60,7 @@ public class PhoneApplication implements Serializable {
                     outputLine = (SourceDataLine) AudioSystem.getMixer(mixers[i]).getLine(new DataLine.Info(SourceDataLine.class, FORMAT));
                 }
             }
+
 
             if (inputLine == null) {
                 printHelp("Input line not found " + args[1]);
@@ -95,6 +101,8 @@ public class PhoneApplication implements Serializable {
     }
 
     private void run() {
+
+
     }
 
     private void initialize(TargetDataLine inputLine, SourceDataLine outputLine, String localAddress, int localPort, String transport, String proxyHost, int proxyPort) throws Exception {
@@ -103,7 +111,6 @@ public class PhoneApplication implements Serializable {
                 logging("server.log", "debug.log", 16).
                 listener(new SipManagerListener() {
 
-
                     @Override
                     public void onTextMessage(String message, String from) {
                         System.out.println("Received message from " + from + " :" + message);
@@ -111,6 +118,7 @@ public class PhoneApplication implements Serializable {
 
                     @Override
                     public void onRemoteBye() {
+                        eventManager.onHangUp();
 
                         rtpConnectionManager.stopStreamingAudio();
                     }
@@ -135,6 +143,7 @@ public class PhoneApplication implements Serializable {
                             throw new IllegalStateException("Unable to connect call", e);
                         }
 
+                        eventManager.onOutgoingCall(accountManager.getUserInfo());
                     }
 
                     @Override
@@ -178,7 +187,7 @@ public class PhoneApplication implements Serializable {
 
                     @Override
                     public void onRegistered() {
-
+                        eventManager.onRegistered();
                     }
 
                     @Override
@@ -194,6 +203,7 @@ public class PhoneApplication implements Serializable {
                     public void authenticationFailed() {
                         System.out.println("Authentication failed :-(");
 
+                        eventManager.onAuthenticationFailed();
                     }
                 });
 
@@ -202,11 +212,14 @@ public class PhoneApplication implements Serializable {
 
         AudioManager audioManager = new AudioManager(rtpConnectionManager.getSocket(), inputLine, outputLine);
 
-        sipManager.initialize();
+        accountManager = new SipAccountManager();
+
+        sipManager.initialize(accountManager);
 
         DeviceImplementations impl = new DeviceImplementations(sipManager, rtpConnectionManager, audioManager);
 
-
+        eventManager = new EventManager(impl);
+        eventManager.open();
     }
 
 }

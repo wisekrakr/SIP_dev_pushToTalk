@@ -28,7 +28,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -75,7 +74,6 @@ public class SipManager implements SipClient {
         this.localSipPort = localSipPort;
         this.sipTransport = sipTransport;
 
-        accountManager = new SipAccountManager();
 
     }
 
@@ -97,7 +95,8 @@ public class SipManager implements SipClient {
         return this;
     }
 
-    public void initialize() throws Exception {
+    public void initialize(SipAccountManager accountManager) throws Exception {
+        this.accountManager = accountManager;
 
         sipSessionState = SipSessionState.IDLE;
 
@@ -366,7 +365,7 @@ public class SipManager implements SipClient {
                             else if (processedResponse.getStatusCode() == Response.FORBIDDEN) {
                                 System.out.println("FORBIDDEN!");
                                 sipSessionState = SipSessionState.IDLE;
-//                                listener.authenticationFailed();
+                                listener.authenticationFailed();
                             }
                             else {
                                 throw new IllegalStateException("Unknown status code " + processedResponse.getStatusCode());
@@ -485,6 +484,7 @@ public class SipManager implements SipClient {
         }
     }
 
+
     @Override
     public void initiateCall(String recipient, int localRtpPort) {
 
@@ -499,7 +499,7 @@ public class SipManager implements SipClient {
     }
 
     @Override
-    public void hangup(String recipient, String callId) {
+    public void hangup(String recipient) {
 
         try{
             if (sipSessionState == SipSessionState.INCOMING) {

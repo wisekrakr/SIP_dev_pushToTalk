@@ -5,7 +5,6 @@ import com.wisekrakr.communiwise.operations.apis.SoundAPI;
 import com.wisekrakr.communiwise.phone.audio.AudioManager;
 import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
-import com.wisekrakr.communiwise.user.SipAccountManager;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -18,7 +17,6 @@ public class DeviceImplementations {
     private final SipManager sipManager;
     private final RTPConnectionManager rtpConnectionManager;
     private final AudioManager audioManager;
-
 
     public DeviceImplementations(SipManager sipManager, RTPConnectionManager rtpConnectionManager,  AudioManager audioManager) {
         this.sipManager = sipManager;
@@ -68,14 +66,13 @@ public class DeviceImplementations {
 
             @Override
             public void mute() {
-                rtpConnectionManager.mute();
+                //todo interrupt the transmit thread? or the targetdataline?
+//                rtpConnectionManager.mute();
+
             }
         };
     }
 
-    private String sipAddressMaker(String extension, String domain){
-        return "sip:" + (extension + "@" + domain);
-    }
 
     public PhoneAPI getPhoneApi(){
         return new PhoneAPI() {
@@ -83,11 +80,11 @@ public class DeviceImplementations {
             private String proxyAddress;
 
             @Override
-            public void initiateCall(String extension, String domain) {
+            public void initiateCall(String recipient) {
 
-                sipManager.initiateCall(sipAddressMaker(extension, domain), rtpConnectionManager.getSocket().getLocalPort());
+                sipManager.initiateCall(recipient, rtpConnectionManager.getSocket().getLocalPort());
 
-                proxyAddress = extension;
+                proxyAddress = recipient;
             }
 
             @Override
@@ -104,24 +101,18 @@ public class DeviceImplementations {
 
 
             @Override
-            public void hangup(String callId) {
+            public void hangup() {
                 try {
-                    sipManager.hangup(proxyAddress, callId);
+                    sipManager.hangup(proxyAddress);
                 } catch (Throwable e) {
                     throw new IllegalStateException("Unable to hang up the device", e);
                 }
-
             }
-
 
             @Override
             public void register(String realm, String domain, String username, String password, String fromAddress) {
                 sipManager.login(realm, username, password, domain, fromAddress);
-
             }
-
         };
     }
-
-
 }
