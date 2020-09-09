@@ -184,8 +184,6 @@ public class SipManager implements SipClient {
                                         break;
                                     }
 
-                                    listener.onTextMessage(message, sp.getFrom().getAddress().toString());
-
                                     break;
 
                                 case Request.BYE:
@@ -250,7 +248,7 @@ public class SipManager implements SipClient {
 
                                     }
 
-                                    listener.onRemoteCancel();
+                                    listener.onRemoteBye();
 
                                     break;
 
@@ -276,6 +274,8 @@ public class SipManager implements SipClient {
 
                             currentCall = clientTransaction;
 
+                            ToHeader toHeader;
+
                             if (processedResponse.getStatusCode() == Response.PROXY_AUTHENTICATION_REQUIRED || processedResponse.getStatusCode() == Response.UNAUTHORIZED) {
                                 System.out.println("Go for Authentication");
 
@@ -292,6 +292,13 @@ public class SipManager implements SipClient {
                                         System.out.println("REGISTERED");
 
                                         sipSessionState = SipSessionState.IDLE;
+
+                                        toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
+
+                                        String domain = toHeader.getAddress().toString();
+
+                                        domain = domain.substring(domain.indexOf("@") + 1);
+                                        domain = domain.substring(0, domain.indexOf(">"));
 
                                         listener.onRegistered();
                                         break;
@@ -310,7 +317,7 @@ public class SipManager implements SipClient {
 
                                         MediaDescription incomingMediaDescriptor = (MediaDescription) sessionDescription.getMediaDescriptions(false).get(0);
 
-                                        ToHeader toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
+                                        toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
 
                                         String proxyName = toHeader.getAddress().toString();
 
@@ -342,8 +349,6 @@ public class SipManager implements SipClient {
                                         sipSessionState = SipSessionState.IDLE;
                                         System.out.println("--- Got 200 OK in UAC outgoing BYE from host");
 
-                                        listener.onBye();
-
                                         break;
                                     default:
                                         throw new IllegalStateException("Unknown request type in response: " + responseEvent);
@@ -351,36 +356,25 @@ public class SipManager implements SipClient {
 
                             } else if (processedResponse.getStatusCode() == Response.DECLINE /*|| processedResponse.getStatusCode() == Response.TEMPORARILY_UNAVAILABLE*/) {
                                 System.out.println("CALL DECLINED");
-                                listener.onRemoteDeclined();
-
                             } else if (processedResponse.getStatusCode() == Response.NOT_FOUND) {
                                 System.out.println("NOT FOUND");
                             } else if (processedResponse.getStatusCode() == Response.ACCEPTED) {
                                 System.out.println("ACCEPTED");
-                                listener.onRemoteAccepted();
-
                             } else if (processedResponse.getStatusCode() == Response.BUSY_HERE) {
                                 System.out.println("BUSY");
-                                listener.onBusy();
                             } else if (processedResponse.getStatusCode() == Response.RINGING) {
                                 System.out.println("RINGING");
-                                listener.onRinging();
                             } else if (processedResponse.getStatusCode() == Response.SERVICE_UNAVAILABLE) {
                                 System.out.println("SERVICE_UNAVAILABLE");
-                                listener.onUnavailable();
                             } else if (processedResponse.getStatusCode() == Response.TRYING) {
                                 System.out.println("Trying...");
-                                listener.onTrying();
-                            }
-                            else if (processedResponse.getStatusCode() == Response.FORBIDDEN) {
+                            } else if (processedResponse.getStatusCode() == Response.FORBIDDEN) {
                                 System.out.println("FORBIDDEN!");
                                 sipSessionState = SipSessionState.IDLE;
                                 listener.authenticationFailed();
-                            }
-                            else {
+                            }else {
                                 throw new IllegalStateException("Unknown status code " + processedResponse.getStatusCode());
                             }
-
                         } catch (Throwable t) {
                             throw new IllegalStateException("Error while processing response " + responseEvent, t);
                         }
@@ -597,7 +591,6 @@ public class SipManager implements SipClient {
             throw new IllegalStateException("No call waiting to be accepted");
         }
 
-        listener.onDeclined();
         try {
             sendResponse(waitingCall, Response.DECLINE);
 
@@ -611,7 +604,6 @@ public class SipManager implements SipClient {
         System.out.println("  Client response send  " + status);
         serverTransaction.sendResponse(messageFactory.createResponse(status, serverTransaction.getRequest()));
     }
-
 
     private Address createContactAddress() {
         try {

@@ -21,12 +21,10 @@
  * Chengxiang Lu and Alex Hauptmann
  *
  */
-package com.wisekrakr.communiwise.phone.audio.processing.g722;
+package com.wisekrakr.communiwise.phone.audio;
 
 
-import com.wisekrakr.communiwise.phone.audio.processing.utils.CodecUtil;
-
-import static com.wisekrakr.communiwise.phone.audio.processing.g722.G722Codec.saturate;
+import com.wisekrakr.communiwise.phone.audio.utils.CodecUtil;
 
 public class G722Encoder  {
 
@@ -173,7 +171,7 @@ public class G722Encoder  {
             }
 
             /* Block 1L, SUBTRA */
-            el = saturate(xlow - _band[0]._s);
+            el = G722Codec.saturate(xlow - _band[0]._s);
 
             /* Block 1L, QUANTL */
             wd = (el >= 0) ? el : -(el + 1);
@@ -214,7 +212,7 @@ public class G722Encoder  {
                 code = (0xC0 | ilow) >> (8 - _bits_per_sample);
             } else {
                 /* Block 1H, SUBTRA */
-                eh = saturate(xhigh - _band[1]._s);
+                eh = G722Codec.saturate(xhigh - _band[1]._s);
 
                 /* Block 1H, QUANTH */
                 wd = (eh >= 0) ? eh : -(eh + 1);

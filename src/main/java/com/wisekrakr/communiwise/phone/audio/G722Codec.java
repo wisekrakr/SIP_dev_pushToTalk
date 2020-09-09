@@ -1,4 +1,4 @@
-package com.wisekrakr.communiwise.phone.audio.processing.g722;
+package com.wisekrakr.communiwise.phone.audio;
 
 public class G722Codec {
     public int getFrameSize() {

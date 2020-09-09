@@ -1,6 +1,6 @@
 package com.wisekrakr.communiwise.phone.connections.threads;
 
-import com.wisekrakr.communiwise.phone.audio.processing.g722.G722Encoder;
+import com.wisekrakr.communiwise.phone.audio.G722Encoder;
 import com.wisekrakr.communiwise.rtp.RTPPacket;
 import com.wisekrakr.communiwise.rtp.RTPParser;
 

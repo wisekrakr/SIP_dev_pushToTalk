@@ -1,68 +1,65 @@
 package com.wisekrakr.communiwise.operations;
 
+
+import com.wisekrakr.communiwise.gui.FrameManagerListener;
+import com.wisekrakr.communiwise.gui.fx.AppFrame;
 import com.wisekrakr.communiwise.operations.apis.PhoneAPI;
 import com.wisekrakr.communiwise.operations.apis.SoundAPI;
-import com.wisekrakr.communiwise.phone.audio.AudioManager;
 import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
 
-public class DeviceImplementations {
+import javax.swing.*;
+import java.net.InetSocketAddress;
+import java.util.Map;
 
+
+public class EventManager implements FrameManagerListener {
+
+    private AppFrame appFrame;
     private final SipManager sipManager;
     private final RTPConnectionManager rtpConnectionManager;
-    private final AudioManager audioManager;
 
-    public DeviceImplementations(SipManager sipManager, RTPConnectionManager rtpConnectionManager,  AudioManager audioManager) {
+    /**
+     *
+     * @param sipManager {@link SipManager} for a phone device. The basic functions of a phone will be handled here.
+     */
+    public EventManager(SipManager sipManager, RTPConnectionManager rtpConnectionManager) {
+
         this.sipManager = sipManager;
         this.rtpConnectionManager = rtpConnectionManager;
-        this.audioManager = audioManager;
+    }
 
+    /**
+     * When the user hangs up or on remote cancel or bye.
+     * The GUI gets destroyed
+     */
+    @Override
+    public void onHangUp() {
+        getPhoneApi().hangup();
+
+        appFrame.hideWindow();
+
+        System.exit(1);
+    }
+
+    @Override
+    public void onCall(Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Throwable e) {
+                System.out.println("WARNING: unable to set look and feel, will continue");
+            }
+
+            appFrame = new AppFrame(this, getSoundApi(), userInfo, proxyName, proxyAddress );
+            appFrame.showWindow();
+        });
     }
 
     public SoundAPI getSoundApi(){
 
         return new SoundAPI() {
-            public final AudioFormat FORMAT = new AudioFormat(16000, 16, 1, true, true);
-
-            @Override
-            public void startRecording() {
-
-                audioManager.startRecordingWavFile();
-            }
-
-            @Override
-            public void playRemoteSound(String resource) {
-                try {
-
-                    AudioInputStream audioStream = AudioSystem.getAudioInputStream(getClass().getResource(resource));
-                    AudioInputStream lowResAudioStream = AudioSystem.getAudioInputStream(FORMAT, audioStream);
-
-                    audioManager.startSendingAudio(lowResAudioStream);
-                } catch (IOException | UnsupportedAudioFileException e) {
-                    System.out.println(" error while sending audio file " + e);
-                }
-            }
-
-            @Override
-            public void stopRecording() {
-                audioManager.stopRecording();
-            }
-
-            @Override
-            public void stopRemoteSound() {
-                audioManager.stopSendingAudio();
-            }
-
-            @Override
-            public void ringing(boolean isRinging) {
-                audioManager.ringing(isRinging);
-            }
 
             @Override
             public void mute() {

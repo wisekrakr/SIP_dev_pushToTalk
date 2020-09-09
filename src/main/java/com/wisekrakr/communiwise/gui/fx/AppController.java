@@ -1,20 +1,13 @@
 package com.wisekrakr.communiwise.gui.fx;
 
-import com.wisekrakr.communiwise.gui.EventManager;
-import com.wisekrakr.communiwise.operations.apis.PhoneAPI;
+import com.wisekrakr.communiwise.operations.EventManager;
 import com.wisekrakr.communiwise.operations.apis.SoundAPI;
 import com.wisekrakr.communiwise.user.SipAccountManager;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 
@@ -41,6 +34,7 @@ public class AppController extends ControllerJFXPanel {
     private AnchorPane textPane;
     @FXML
     private ToggleButton toggleButton;
+
 
 
     public AppController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
@@ -85,14 +79,9 @@ public class AppController extends ControllerJFXPanel {
         domain.setText(userInfo.get(SipAccountManager.UserInfoPart.DOMAIN.getInfoPart()));
         proxy.setText(make(proxyName, proxyAddress.getHostName()));
 
-        System.out.println(proxyAddress.getHostString());
-        System.out.println(proxyAddress.getAddress().getCanonicalHostName());
-        System.out.println(proxyAddress.getAddress().toString());
-
         closeButton.setGraphic(addIconForButton());
 
         textPane.setMouseTransparent(true);
-
     }
 
     private static ImageView addIconForButton(){

@@ -1,19 +1,21 @@
 package com.wisekrakr.communiwise.main;
 
 
-import com.wisekrakr.communiwise.gui.EventManager;
-import com.wisekrakr.communiwise.operations.DeviceImplementations;
-import com.wisekrakr.communiwise.phone.audio.AudioManager;
+import com.wisekrakr.communiwise.operations.EventManager;
 import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
 import com.wisekrakr.communiwise.phone.sip.SipManagerListener;
 import com.wisekrakr.communiwise.user.SipAccountManager;
+import org.apache.commons.cli.*;
 
 import javax.sound.sampled.*;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
-public class PhoneApplication implements Serializable {
+import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
+
+public class PTTApp implements Serializable {
 
     private static final AudioFormat FORMAT = new AudioFormat(16000, 16, 1, true, true);
 
@@ -21,7 +23,6 @@ public class PhoneApplication implements Serializable {
     private EventManager eventManager;
     private SipAccountManager accountManager;
 
-    private static String[] args;
 
     private static void printHelp(String message) {
         System.out.println(message);
@@ -36,18 +37,28 @@ public class PhoneApplication implements Serializable {
     }
 
     public static void main(String[] args) {
-        PhoneApplication.args = args;
-
-//        if (args.length == 1 && "help".equalsIgnoreCase(args[0]) || args.length != 3) {
-//            printHelp((args.length == 1 && "help".equalsIgnoreCase(args[0])) ? "Help" : "Invalid arguments");
-//
-//            System.exit(1);
-//        }
 
         System.out.println(" =======>< CommUniWise activated ><======= ");
 
+        Options options = new Options();
 
-        PhoneApplication application = new PhoneApplication();
+        CommandLine cmd = null;
+        HelpFormatter formatter = new HelpFormatter();
+
+        try {
+            cmd = commandLineParser(options, args);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        final PrintWriter writer = new PrintWriter(System.out);
+        formatter.printUsage(writer,80,"CommUniWise Push-to-talk SIP Phone", options);
+        writer.flush();
+
+        optionNotThere(cmd, "i", "You have to assign an audio input device", options, formatter);
+        optionNotThere(cmd, "o", "You have to assign an audio output device", options, formatter);
+
+        PTTApp application = new PTTApp();
 
         try {
             Mixer.Info[] mixers = AudioSystem.getMixerInfo();
@@ -55,41 +66,47 @@ public class PhoneApplication implements Serializable {
             TargetDataLine inputLine = null;
             SourceDataLine outputLine = null;
 
-
             for (int i = 0; i < mixers.length; i++) {
-                if (args[1].equals(mixers[i].getName())) {
+                if (cmd.getOptionValue("i").equals(mixers[i].getName())) {
                     inputLine = (TargetDataLine) AudioSystem.getMixer(mixers[i]).getLine(new DataLine.Info(TargetDataLine.class, FORMAT));
                 }
-                if (args[2].equals(mixers[i].getName())) {
+                if (cmd.getOptionValue("o").equals(mixers[i].getName())) {
                     outputLine = (SourceDataLine) AudioSystem.getMixer(mixers[i]).getLine(new DataLine.Info(SourceDataLine.class, FORMAT));
                 }
             }
 
-
             if (inputLine == null) {
-                printHelp("Input line not found " + args[1]);
+                formatter.printHelp("Input line not found " , options);
                 System.exit(1);
             }
             if (outputLine == null) {
-                printHelp("Output line not found " + args[2]);
+                formatter.printHelp("Output line not found " ,options);
                 System.exit(1);
             }
 
             inputLine.open(FORMAT);
             outputLine.open(FORMAT);
 
-            String localAddress = args[0];
+            optionNotThere(cmd, "ip", " Please fill in your current IP Address", options, formatter);
+            optionNotThere(cmd, "u", "Please fill in the username used on the domain", options, formatter);
+            optionNotThere(cmd, "p", "Please fill in the password you used to register", options, formatter);
+            optionNotThere(cmd, "d", "Please fill in the domain you registered on", options, formatter);
+            optionNotThere(cmd, "e", "Please fill in the extension you want to call", options, formatter);
+
+            String localAddress = cmd.getOptionValue("ip");
+            String username = cmd.getOptionValue("username");
+            String password = cmd.getOptionValue("password");
+            String domain = cmd.getOptionValue("domain");
+            String extension = cmd.getOptionValue("extension");
 
             application.initialize(
                     inputLine,
                     outputLine,
+                    username,
                     localAddress,
-                    5080,
-                    "udp",
-                    "asterisk.interzone",
-                    5060
-            );
-
+                    extension,
+                    domain,
+                    password);
 
         } catch (Exception e) {
             System.out.println("Unable to initialize: " + e);
@@ -104,37 +121,45 @@ public class PhoneApplication implements Serializable {
 
     }
 
+    private static void optionNotThere(CommandLine cmd, String option, String message, Options options, HelpFormatter formatter){
+        if(!cmd.hasOption(option)){
+            formatter.printHelp("The -" + option + " is missing from the arguments", message, options,"Thank you for using a Wisekrakr product");
+            System.exit(1);
+        }
+    }
+
+    private static CommandLine commandLineParser(Options options, String[] strings) throws ParseException {
+        options
+                .addOption("u", "username", true, "Username used on the domain")
+                .addOption("p", "password", true, "Password used to register on the domain")
+                .addOption("d", "domain", true, "Domain you are registered on")
+                .addOption("e", "extension", true, "Extension you want to call")
+                .addOption("ip", "ipAddress", true, "Your IP Address")
+                .addRequiredOption("i", "inputLine", true, "Audio input device for the target data line")
+                .addRequiredOption("o", "outputLine", true, "Audio output device for the source data line");
+
+        CommandLineParser parser = new DefaultParser();
+
+        return parser.parse(options, strings);
+    }
+
     private void run() {
 
 
     }
 
-    private void initialize(TargetDataLine inputLine, SourceDataLine outputLine, String localAddress, int localPort, String transport, String proxyHost, int proxyPort) throws Exception {
+    private void initialize(TargetDataLine inputLine, SourceDataLine outputLine, String username, String localAddress, String proxyExtension, String proxyHost, String password) throws Exception {
 
-        SipManager sipManager = new SipManager(proxyHost, proxyPort, localAddress, localPort, transport).
+        SipManager sipManager = new SipManager(proxyHost, 5060, localAddress, 5080, "udp").
                 logging("server.log", "debug.log", 16).
                 listener(new SipManagerListener() {
 
-                    @Override
-                    public void onTextMessage(String message, String from) {
-                        System.out.println("Received message from " + from + " :" + message);
-                    }
 
                     @Override
                     public void onRemoteBye() {
                         eventManager.onHangUp();
 
                         rtpConnectionManager.stopStreamingAudio();
-                    }
-
-                    @Override
-                    public void onRemoteCancel() {
-
-                    }
-
-                    @Override
-                    public void onRemoteDeclined() {
-
                     }
 
                     @Override
@@ -147,17 +172,9 @@ public class PhoneApplication implements Serializable {
                             throw new IllegalStateException("Unable to connect call", e);
                         }
 
-                        eventManager.onOutgoingCall(accountManager.getUserInfo(),name, proxyAddress);
+                        eventManager.onCall(accountManager.getUserInfo(),name, proxyAddress);
                     }
 
-                    @Override
-                    public void onUnavailable() {
-
-                    }
-
-                    @Override
-                    public void onRinging() {
-                    }
 
                     @Override
                     public void onAccepted(String rtpProxy, int remoteRtpPort) {
@@ -175,54 +192,33 @@ public class PhoneApplication implements Serializable {
                     }
 
                     @Override
-                    public void onDeclined() {
-
-                    }
-
-                    @Override
-                    public void onBusy() {
-
-                    }
-
-                    @Override
-                    public void onRemoteAccepted() {
-                    }
-
-                    @Override
                     public void onRegistered() {
-                        eventManager.onRegistered();
-                    }
-
-                    @Override
-                    public void onBye() {
-
-                    }
-
-                    @Override
-                    public void onTrying() {
+                        eventManager.getPhoneApi().initiateCall(make(proxyExtension,proxyHost));
                     }
 
                     @Override
                     public void authenticationFailed() {
                         System.out.println("Authentication failed :-(");
 
-                        eventManager.onAuthenticationFailed();
                     }
                 });
 
         rtpConnectionManager = new RTPConnectionManager(inputLine, outputLine);
         rtpConnectionManager.init();
 
-        AudioManager audioManager = new AudioManager(rtpConnectionManager.getSocket(), inputLine, outputLine);
-
         accountManager = new SipAccountManager();
 
         sipManager.initialize(accountManager);
 
-        DeviceImplementations impl = new DeviceImplementations(sipManager, rtpConnectionManager, audioManager);
+        eventManager = new EventManager(sipManager, rtpConnectionManager);
 
-        eventManager = new EventManager(impl);
-        eventManager.open(args);
+        String realm = null;
+        int dot = proxyHost.indexOf(".");
+
+        if(dot != -1){
+            realm = proxyHost.substring(0, dot);
+        }
+
+        eventManager.getPhoneApi().register(realm, proxyHost, username, password, make(username, proxyHost));
     }
-
 }

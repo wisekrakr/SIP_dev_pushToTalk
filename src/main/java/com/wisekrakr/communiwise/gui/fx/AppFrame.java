@@ -1,6 +1,6 @@
 package com.wisekrakr.communiwise.gui.fx;
 
-import com.wisekrakr.communiwise.gui.EventManager;
+import com.wisekrakr.communiwise.operations.EventManager;
 import com.wisekrakr.communiwise.operations.apis.SoundAPI;
 
 import javax.swing.*;

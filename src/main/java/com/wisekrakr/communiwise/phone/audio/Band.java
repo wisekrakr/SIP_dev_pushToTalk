@@ -1,6 +1,4 @@
-package com.wisekrakr.communiwise.phone.audio.processing.g722;
-
-import static com.wisekrakr.communiwise.phone.audio.processing.g722.G722Codec.saturate;
+package com.wisekrakr.communiwise.phone.audio;
 
 public class Band {
 
@@ -26,16 +24,16 @@ public class Band {
 
         /* Block 4, RECONS */
         _d[0] = d;
-        _r[0] = saturate(_s + d);
+        _r[0] = G722Codec.saturate(_s + d);
 
         /* Block 4, PARREC */
-        _p[0] = saturate(_sz + d);
+        _p[0] = G722Codec.saturate(_sz + d);
 
         /* Block 4, UPPOL2 */
         for (i = 0; i < 3; i++) {
             _sg[i] = _p[i] >> 15;
         }
-        wd1 = saturate(_a[1] << 2);
+        wd1 = G722Codec.saturate(_a[1] << 2);
 
         wd2 = (_sg[0] == _sg[1]) ? -wd1 : wd1;
         if (wd2 > 32767) {
@@ -57,8 +55,8 @@ public class Band {
         wd1 = (_sg[0] == _sg[1]) ? 192 : -192;
         wd2 = (_a[1] * 32640) >> 15;
 
-        _ap[1] = saturate(wd1 + wd2);
-        wd3 = saturate(15360 - _ap[2]);
+        _ap[1] = G722Codec.saturate(wd1 + wd2);
+        wd3 = G722Codec.saturate(15360 - _ap[2]);
         if (_ap[1] > wd3) {
             _ap[1] = wd3;
         } else if (_ap[1] < -wd3) {
@@ -72,7 +70,7 @@ public class Band {
             _sg[i] = _d[i] >> 15;
             wd2 = (_sg[i] == _sg[0]) ? wd1 : -wd1;
             wd3 = (_b[i] * 32640) >> 15;
-            _bp[i] = saturate(wd2 + wd3);
+            _bp[i] = G722Codec.saturate(wd2 + wd3);
         }
 
         /* Block 4, DELAYA */
@@ -88,22 +86,22 @@ public class Band {
         }
 
         /* Block 4, FILTEP */
-        wd1 = saturate(_r[1] + _r[1]);
+        wd1 = G722Codec.saturate(_r[1] + _r[1]);
         wd1 = (_a[1] * wd1) >> 15;
-        wd2 = saturate(_r[2] + _r[2]);
+        wd2 = G722Codec.saturate(_r[2] + _r[2]);
         wd2 = (_a[2] * wd2) >> 15;
-        _sp = saturate(wd1 + wd2);
+        _sp = G722Codec.saturate(wd1 + wd2);
 
         /* Block 4, FILTEZ */
         _sz = 0;
         for (i = 6; i > 0; i--) {
-            wd1 = saturate(_d[i] + _d[i]);
+            wd1 = G722Codec.saturate(_d[i] + _d[i]);
             _sz += (_b[i] * wd1) >> 15;
         }
-        _sz = saturate(_sz);
+        _sz = G722Codec.saturate(_sz);
 
         /* Block 4, PREDIC */
-        _s = saturate(_sp + _sz);
+        _s = G722Codec.saturate(_sp + _sz);
     }
 
 }
