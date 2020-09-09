@@ -7,5 +7,6 @@ public interface SoundAPI {
     void stopRecording();
     void stopRemoteSound();
     void mute();
+    void unmute();
     void ringing(boolean isRinging);
 }

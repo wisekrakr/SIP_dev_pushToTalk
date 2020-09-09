@@ -14,6 +14,7 @@ public class ControllerJFXPanel extends JFXPanel implements ControllerContext {
 
     private void createScene() {
         Scene scene = new Scene(root);
+
         setScene(scene);
     }
 

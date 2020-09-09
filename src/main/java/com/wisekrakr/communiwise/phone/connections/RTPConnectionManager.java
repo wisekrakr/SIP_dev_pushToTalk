@@ -17,7 +17,6 @@ public class RTPConnectionManager {
 
     private Thread receptionThread;
     private TransmittingThread transmittingThread;
-    private Thread chatThread;
 
     public RTPConnectionManager(TargetDataLine inputLine, SourceDataLine outputLine) {
         this.inputLine = inputLine;
@@ -27,18 +26,6 @@ public class RTPConnectionManager {
     public void init() throws SocketException {
         this.socket = new DatagramSocket();
     }
-
-    //todo this not here
-//    public void connectRTPChat(int port){
-//
-//        chatThread = new Thread(new ReadThread(socket,socket.getInetAddress(),port));
-//        chatThread.setName("Chat thread");
-//        chatThread.setDaemon(true);
-//        chatThread.start();
-//
-//        System.out.println(" RTP Connection Chat Client: " + socket.isConnected());
-//
-//    }
 
     public void connectRTPAudio(InetSocketAddress remoteAddress) throws IOException{
         socket.connect(remoteAddress);
@@ -87,19 +74,28 @@ public class RTPConnectionManager {
     }
 
     public void mute(){
-        if (inputLine != null && inputLine.isRunning()) {
-            BooleanControl control = (BooleanControl) inputLine.getControl(BooleanControl.Type.MUTE);
-            control.setValue(true);
+//        if (inputLine != null && inputLine.isRunning()) {
+//            BooleanControl control = (BooleanControl) inputLine.getControl(BooleanControl.Type.MUTE);
+//            control.setValue(true);
+//        }
+        try {
+            transmittingThread.mute();
+        } catch (Throwable t) {
+            throw new IllegalStateException("Could not mute the transmitting thread", t);
         }
     }
 
     public void unmute() {
 
-        if (inputLine != null && !inputLine.isRunning()) {
-            BooleanControl control = (BooleanControl) inputLine.getControl(BooleanControl.Type.MUTE);
-            control.setValue(false);
+//        if (inputLine != null ) {
+//            BooleanControl control = (BooleanControl) inputLine.getControl(BooleanControl.Type.MUTE);
+//            control.setValue(false);
+//        }
+        try {
+            transmittingThread.unmute();
+        } catch (Throwable t) {
+            throw new IllegalStateException("Could not unmute the transmitting thread", t);
         }
-
     }
 
     public DatagramSocket getSocket() {

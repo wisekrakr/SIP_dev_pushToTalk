@@ -44,7 +44,11 @@ public class EventManager implements FrameManagerListener {
      */
     @Override
     public void onHangUp() {
+        phone.hangup();
+
         appFrame.hideWindow();
+
+        System.exit(1);
     }
 
     @Override
@@ -56,10 +60,8 @@ public class EventManager implements FrameManagerListener {
                 System.out.println("WARNING: unable to set look and feel, will continue");
             }
 
-            appFrame = new AppFrame(phone, sound, userInfo );
+            appFrame = new AppFrame(this, sound, userInfo );
             appFrame.showWindow();
-
-            commandConsole.stop();
         });
     }
 
@@ -90,20 +92,17 @@ public class EventManager implements FrameManagerListener {
      */
     @Override
     public void close() {
-        phone.hangup();
 
-        appFrame.hideWindow();
-
-        System.exit(1);
     }
 
     /**
      * When the user starts the app. A new Console gets created.
+     * @param args
      */
     @Override
-    public void open() {
-        commandConsole = new CommandConsole(phone);
-        commandConsole.start();
+    public void open(String[] args) {
+        commandConsole = new CommandConsole(phone,args);
+        commandConsole.startConsole();
     }
 
 
@@ -123,7 +122,7 @@ public class EventManager implements FrameManagerListener {
         //textIO show error/alert and start over
         commandConsole.onError();
 
-        commandConsole.start();
+//        commandConsole.start();
     }
 
 

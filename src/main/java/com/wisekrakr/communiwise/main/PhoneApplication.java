@@ -21,6 +21,8 @@ public class PhoneApplication implements Serializable {
     private EventManager eventManager;
     private SipAccountManager accountManager;
 
+    private static String[] args;
+
     private static void printHelp(String message) {
         System.out.println(message);
         System.out.println("Arguments: <local address> <audio input> <audio output>");
@@ -34,11 +36,13 @@ public class PhoneApplication implements Serializable {
     }
 
     public static void main(String[] args) {
-        if (args.length == 1 && "help".equalsIgnoreCase(args[0]) || args.length != 3) {
-            printHelp((args.length == 1 && "help".equalsIgnoreCase(args[0])) ? "Help" : "Invalid arguments");
+        PhoneApplication.args = args;
 
-            System.exit(1);
-        }
+//        if (args.length == 1 && "help".equalsIgnoreCase(args[0]) || args.length != 3) {
+//            printHelp((args.length == 1 && "help".equalsIgnoreCase(args[0])) ? "Help" : "Invalid arguments");
+//
+//            System.exit(1);
+//        }
 
         System.out.println(" =======>< CommUniWise activated ><======= ");
 
@@ -219,7 +223,7 @@ public class PhoneApplication implements Serializable {
         DeviceImplementations impl = new DeviceImplementations(sipManager, rtpConnectionManager, audioManager);
 
         eventManager = new EventManager(impl);
-        eventManager.open();
+        eventManager.open(args);
     }
 
 }

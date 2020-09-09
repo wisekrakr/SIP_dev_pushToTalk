@@ -1,19 +1,28 @@
 package com.wisekrakr.communiwise.gui.fx;
 
+import com.wisekrakr.communiwise.gui.EventManager;
 import com.wisekrakr.communiwise.operations.apis.PhoneAPI;
 import com.wisekrakr.communiwise.operations.apis.SoundAPI;
 import com.wisekrakr.communiwise.user.SipAccountManager;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 
 import java.util.Map;
 
 public class AppController extends ControllerJFXPanel {
 
-    private final AppFrame gui;
-    private final PhoneAPI phone;
+    private final EventManager eventManager;
     private final SoundAPI sound;
     private final Map<String, String> userInfo;
 
@@ -22,33 +31,42 @@ public class AppController extends ControllerJFXPanel {
     @FXML
     private Label username,domain;
     @FXML
-    private Button muteButton, closeButton;
+    private Button closeButton;
+    @FXML
+    private AnchorPane container;
+    @FXML
+    private ToggleButton toggleButton;
 
-    public AppController(AppFrame gui, PhoneAPI phone, SoundAPI sound, Map<String, String> userInfo) {
-        this.gui = gui;
-        this.phone = phone;
+
+    public AppController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo) {
+        this.eventManager = eventManager;
         this.sound = sound;
         this.userInfo = userInfo;
+
     }
 
     @FXML
     private void close() {
-        gui.hideWindow();
-
-        phone.hangup();
+        eventManager.onHangUp();
     }
 
     @FXML
-    private void mute(){
-        sound.mute();
-
+    private void talk(){
         if(isMuted){
-            if(muteButton.getText().equals("Unmute")){
-                muteButton.setText("Mute");
+            if(toggleButton.getText().equals("Muted")){
+
+                toggleButton.setText("Unmuted");
+                toggleButton.setTextFill(Color.GREEN);
+
+                sound.unmute();
             }
         }else{
-            if(muteButton.getText().equals("Mute")){
-                muteButton.setText("Unmute");
+            if(toggleButton.getText().equals("Unmuted")){
+
+                toggleButton.setText("Muted");
+                toggleButton.setTextFill(Color.RED);
+
+                sound.mute();
             }
         }
 
@@ -61,6 +79,8 @@ public class AppController extends ControllerJFXPanel {
         domain.setText(userInfo.get(SipAccountManager.UserInfoPart.DOMAIN.getInfoPart()));
 
         closeButton.setGraphic(addIconForButton());
+
+
     }
 
     private static ImageView addIconForButton(){
@@ -81,4 +101,5 @@ public class AppController extends ControllerJFXPanel {
             throw new IllegalArgumentException("Could not find path to image " + path,t);
         }
     }
+
 }

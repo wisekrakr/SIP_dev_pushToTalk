@@ -24,8 +24,6 @@ public class TransmittingThread {
 
     private final G722Encoder g722Encoder = new G722Encoder(2000);
 
-    private boolean isMuted = true;
-
     public TransmittingThread(DatagramSocket socket, TargetDataLine targetDataLine) {
         this.socket = socket;
         this.targetDataLine = targetDataLine;
@@ -165,6 +163,7 @@ public class TransmittingThread {
         encoderThread.start();
         rtpSenderThread.start();
 
+
     }
 
     public void stop() {
@@ -173,24 +172,26 @@ public class TransmittingThread {
         rtpSenderThread.interrupt();
     }
 
-    public void mute(){
-        if(isMuted){
-            captureThread.interrupt();
-            encoderThread.interrupt();
-            rtpSenderThread.interrupt();
+    public void mute() throws InterruptedException {
+        System.out.println("    MUTED   transmitting " + targetDataLine.available());
 
-            isMuted = !isMuted;
-        }else{
-            captureThread.start();
-            encoderThread.start();
-            rtpSenderThread.start();
-        }
+//        captureThread.wait();
+//        encoderThread.wait();
+//        rtpSenderThread.wait();
 
+    }
 
+    public void unmute(){
+        System.out.println("    UNMUTED   transmitting " + targetDataLine.available());
+
+//        captureThread.notify();
+//        encoderThread.notify();
+//        rtpSenderThread.notify();
     }
 
 
     public static final int SAMPLE_SIZE = 16;
     public static final int BUFFER_SIZE = SAMPLE_SIZE * 20;
+
 
 }

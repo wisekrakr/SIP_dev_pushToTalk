@@ -13,7 +13,6 @@ LICENSE
 
 SPECIFICATION
 
-
 CommUniWise is a software phone (softphone) compatible with the
 following specifications:
  - RFC 3261 (SIP),
@@ -23,23 +22,37 @@ following specifications:
  - RFC 2617 (Digest Authentication),
  - ITU-T G.722 (PCMU, PCMA)
 
-
 PREREQUISITES
 
 This software has been developed using Oracle Java Development Kit
 version 7.
 
+MAVEN DEPENDENCIES
 
-RUNNING
+These are the dependencies used in the project:
+ - Commons-cli 1.4
+ - Jain-sip-api 1.2.1.4
+ - Jain-sip-ri 1.3.0-91
+ - Jain-sdp 1.0.11111
+ - Jain-sip-sdp 1.2.11111
+ - Jain-sip-tck 1.2.11111
+ - Jline 2.14.6
+ - Log4j 1.2.17
+ - Commons-lang3 3.11
 
-Run the jar file. Register with your username, password and to what domain you are registering on.
-You then will be prompted to start a session. Your sessions will always be started muted.
+
+USAGE
+
+In program arguments use the following:
+-u <username> Your username
+-p <password> Your password
+-d <domain> The domain/server registered on
+-e <extension> The extension you want to call
+
+It will register/log you in automatically, with the help of commons cli. When registration is successful, the program will call the extension.
 
 
-As a Main-Class has been defined in jar manifest, you can also use the following
-command line:
 
-  java -jar build/wisephone.jar -Dwise.home=user1 com.wisekrakr.main.PhoneApplication
 
 
 

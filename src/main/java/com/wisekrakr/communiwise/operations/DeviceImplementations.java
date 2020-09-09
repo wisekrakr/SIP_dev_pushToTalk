@@ -67,9 +67,14 @@ public class DeviceImplementations {
             @Override
             public void mute() {
                 //todo interrupt the transmit thread? or the targetdataline?
-//                rtpConnectionManager.mute();
-
+                rtpConnectionManager.mute();
             }
+
+            @Override
+            public void unmute() {
+                rtpConnectionManager.unmute();
+            }
+
         };
     }
 
@@ -111,6 +116,7 @@ public class DeviceImplementations {
 
             @Override
             public void register(String realm, String domain, String username, String password, String fromAddress) {
+                System.out.println("LOGGING IN....");
                 sipManager.login(realm, username, password, domain, fromAddress);
             }
         };
