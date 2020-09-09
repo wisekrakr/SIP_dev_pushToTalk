@@ -18,31 +18,37 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
+
+import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
 
 public class AppController extends ControllerJFXPanel {
 
     private final EventManager eventManager;
     private final SoundAPI sound;
     private final Map<String, String> userInfo;
+    private final String proxyName;
+    private final InetSocketAddress proxyAddress;
 
     private boolean isMuted;
 
     @FXML
-    private Label username,domain;
+    private Label username,domain, proxy;
     @FXML
     private Button closeButton;
     @FXML
-    private AnchorPane container;
+    private AnchorPane textPane;
     @FXML
     private ToggleButton toggleButton;
 
 
-    public AppController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo) {
+    public AppController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
         this.eventManager = eventManager;
         this.sound = sound;
         this.userInfo = userInfo;
-
+        this.proxyName = proxyName;
+        this.proxyAddress = proxyAddress;
     }
 
     @FXML
@@ -55,13 +61,13 @@ public class AppController extends ControllerJFXPanel {
         if(isMuted){
             if(toggleButton.getText().equals("Muted")){
 
-                toggleButton.setText("Unmuted");
+                toggleButton.setText("Talking!");
                 toggleButton.setTextFill(Color.GREEN);
 
                 sound.unmute();
             }
         }else{
-            if(toggleButton.getText().equals("Unmuted")){
+            if(toggleButton.getText().equals("Talking!")){
 
                 toggleButton.setText("Muted");
                 toggleButton.setTextFill(Color.RED);
@@ -77,9 +83,15 @@ public class AppController extends ControllerJFXPanel {
     public void initComponents() {
         username.setText(userInfo.get(SipAccountManager.UserInfoPart.USERNAME.getInfoPart()));
         domain.setText(userInfo.get(SipAccountManager.UserInfoPart.DOMAIN.getInfoPart()));
+        proxy.setText(make(proxyName, proxyAddress.getHostName()));
+
+        System.out.println(proxyAddress.getHostString());
+        System.out.println(proxyAddress.getAddress().getCanonicalHostName());
+        System.out.println(proxyAddress.getAddress().toString());
 
         closeButton.setGraphic(addIconForButton());
 
+        textPane.setMouseTransparent(true);
 
     }
 

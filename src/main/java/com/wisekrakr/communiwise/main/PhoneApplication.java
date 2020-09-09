@@ -138,7 +138,7 @@ public class PhoneApplication implements Serializable {
                     }
 
                     @Override
-                    public void callConfirmed(String rtpHost, int rtpPort) {
+                    public void callConfirmed(String name, String rtpHost, int rtpPort) {
                         InetSocketAddress proxyAddress = new InetSocketAddress(rtpHost, rtpPort);
                         try {
                             rtpConnectionManager.connectRTPAudio(proxyAddress);
@@ -147,7 +147,7 @@ public class PhoneApplication implements Serializable {
                             throw new IllegalStateException("Unable to connect call", e);
                         }
 
-                        eventManager.onOutgoingCall(accountManager.getUserInfo());
+                        eventManager.onOutgoingCall(accountManager.getUserInfo(),name, proxyAddress);
                     }
 
                     @Override
@@ -157,7 +157,6 @@ public class PhoneApplication implements Serializable {
 
                     @Override
                     public void onRinging() {
-
                     }
 
                     @Override

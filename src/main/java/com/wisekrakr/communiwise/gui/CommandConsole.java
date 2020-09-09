@@ -5,6 +5,8 @@ import org.apache.commons.cli.*;
 
 import java.io.PrintWriter;
 
+import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
+
 public class CommandConsole  {
 
     private final PhoneAPI phone;
@@ -64,18 +66,14 @@ public class CommandConsole  {
             realm = domain.substring(0, dot);
         }
 
-        phone.register(realm, domain, username, password, sipAddressMaker(username, domain));
-    }
-
-    private String sipAddressMaker(String name, String domain){
-        return "sip:" + (name + "@" + domain);
+        phone.register(realm, domain, username, password, make(username, domain));
     }
 
 
     public void connectWithExtension() {
         extension = cmd.getOptionValue("extension");
 
-        phone.initiateCall(sipAddressMaker(extension, domain));
+        phone.initiateCall(make(extension, domain));
     }
 
     public void onError(){

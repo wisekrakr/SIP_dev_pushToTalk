@@ -7,25 +7,29 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 public class AppFrame extends JFrame {
 
     private final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    private static final int DESIRED_HEIGHT = 85;
-    private static final int DESIRED_WIDTH = 390;
+    private static final int DESIRED_HEIGHT = 100;
+    private static final int DESIRED_WIDTH = 400;
 
     private final EventManager eventManager;
     private final Map<String, String> userInfo;
     private final SoundAPI sound;
+    private final String proxyName;
+    private final InetSocketAddress proxyAddress;
 
-    public AppFrame(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo) {
+    public AppFrame(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
         this.eventManager = eventManager;
         this.userInfo = userInfo;
         this.sound = sound;
+        this.proxyName = proxyName;
+        this.proxyAddress = proxyAddress;
 
         prepareGUI();
-
     }
 
 
@@ -36,7 +40,7 @@ public class AppFrame extends JFrame {
         setBounds(screenSize.width + DESIRED_WIDTH, screenSize.height, DESIRED_WIDTH, DESIRED_HEIGHT);
         setLocationRelativeTo(null);
 
-        AppController controller = (AppController) new AppController( eventManager, sound, userInfo).initialize("/app.fxml");
+        AppController controller = (AppController) new AppController( eventManager, sound, userInfo, proxyName, proxyAddress).initialize("/app.fxml");
         controller.initComponents();
 
         add(controller,BorderLayout.CENTER);

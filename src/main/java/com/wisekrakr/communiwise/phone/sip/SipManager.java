@@ -310,7 +310,17 @@ public class SipManager implements SipClient {
 
                                         MediaDescription incomingMediaDescriptor = (MediaDescription) sessionDescription.getMediaDescriptions(false).get(0);
 
+                                        ToHeader toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
+
+                                        String proxyName = toHeader.getAddress().toString();
+
+                                        proxyName = proxyName.substring(proxyName.indexOf(":") + 1);
+                                        proxyName = proxyName.substring(0, proxyName.indexOf("@"));
+
+                                        toHeader.getAddress().setDisplayName(proxyName);
+
                                         listener.callConfirmed(
+                                                proxyName,
                                                 sessionDescription.getConnection().getAddress(),
                                                 incomingMediaDescriptor.getMedia().getMediaPort()
                                         );

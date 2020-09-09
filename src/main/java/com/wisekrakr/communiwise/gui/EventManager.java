@@ -8,6 +8,7 @@ import com.wisekrakr.communiwise.operations.apis.SoundAPI;
 
 
 import javax.swing.*;
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 
@@ -36,6 +37,7 @@ public class EventManager implements FrameManagerListener {
     public void onIncomingCall() {
 
         sound.ringing(true);
+
     }
 
     /**
@@ -52,7 +54,7 @@ public class EventManager implements FrameManagerListener {
     }
 
     @Override
-    public void onOutgoingCall(Map<String, String> userInfo) {
+    public void onOutgoingCall(Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -60,7 +62,7 @@ public class EventManager implements FrameManagerListener {
                 System.out.println("WARNING: unable to set look and feel, will continue");
             }
 
-            appFrame = new AppFrame(this, sound, userInfo );
+            appFrame = new AppFrame(this, sound, userInfo, proxyName, proxyAddress );
             appFrame.showWindow();
         });
     }
