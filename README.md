@@ -3,8 +3,8 @@
 ![version](https://img.shields.io/badge/version-0.0.3-blue)
 
     
-                                                  CommUniWise: java push-to-talk sip softphone
-                                                 http://github.com/wisekrakr/Sip_dev_pushToTalk
+                                  CommUniWise: java push-to-talk sip softphone
+                                 http://github.com/wisekrakr/Sip_dev_pushToTalk
 
 
 
