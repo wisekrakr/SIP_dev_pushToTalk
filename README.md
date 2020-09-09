@@ -1,12 +1,12 @@
-
-            CommUniWise: java push-to-talk sip softphone
-           http://github.com/wisekrakr/Sip_dev_pushToTalk
-
-
-
-<img src="https://img.shields.io/badge/Java-build%20with%20Java-blue"/>
 ![Master](https://github.com/ipphone/core/workflows/Master/badge.svg)
+<img src="https://img.shields.io/badge/Java-build%20with%20Java-blue"/>
 ![version](https://img.shields.io/badge/version-0.0.3-blue)
+
+    
+                                                  CommUniWise: java push-to-talk sip softphone
+                                                 http://github.com/wisekrakr/Sip_dev_pushToTalk
+
+
 
 <a href="https://twitter.com/intent/follow?screen_name=shields_io">
         <img src="https://img.shields.io/twitter/follow/wisekrakr?style=social&logo=twitter"
