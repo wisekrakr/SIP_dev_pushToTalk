@@ -1,6 +1,6 @@
 ![Master](https://github.com/ipphone/core/workflows/Master/badge.svg)
 <img src="https://img.shields.io/badge/Java-build%20with%20Java-blue"/>
-![version](https://img.shields.io/badge/version-0.0.3-blue)
+![version](https://img.shields.io/badge/version-0.0.9-blue)
 
     
                                   CommUniWise: java push-to-talk sip softphone
@@ -19,11 +19,11 @@ CommUniWise provides an object-oriented JavaScript API for embedding
 two-way audio. This is a pure client-side solution and requires zero 
 server-side logic on your part.
 
-####LICENSE
+#### LICENSE
 
 
 
-####SPECIFICATION
+#### SPECIFICATION
 
 CommUniWise is a software phone (softphone) compatible with the
 following specifications:
@@ -34,12 +34,12 @@ following specifications:
  - RFC 2617 (Digest Authentication),
  - ITU-T G.722 (PCMU, PCMA)
 
-####PREREQUISITES
+#### PREREQUISITES
 
 This software has been developed using Oracle Java Development Kit
 version 7.
 
-####MAVEN DEPENDENCIES
+#### MAVEN DEPENDENCIES
 
 These are the dependencies used in the project:
  - Commons-cli 
@@ -52,7 +52,7 @@ These are the dependencies used in the project:
  - Commons-lang3 
 
 
-####USAGE
+#### USAGE
 
 In program arguments use the following:
 - **-ip <ip address>:** _Your IP address_
@@ -95,9 +95,6 @@ It will register/log you in automatically, with the help of commons cli. When re
 
 
 
-
-
-
-##AUTHOR
+## AUTHOR
 
 David Buendia Cosano davidiscodinghere@gmail.com
