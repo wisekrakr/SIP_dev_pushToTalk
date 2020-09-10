@@ -1,28 +1,28 @@
 package com.wisekrakr.communiwise.operations;
 
-
 import com.wisekrakr.communiwise.gui.FrameManagerListener;
-import com.wisekrakr.communiwise.gui.fx.AppFrame;
-import com.wisekrakr.communiwise.operations.apis.PhoneAPI;
-import com.wisekrakr.communiwise.operations.apis.SoundAPI;
+import com.wisekrakr.communiwise.gui.fx.AppGUI;
 import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
-
 
 import javax.swing.*;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
-
+/**
+ * This class controls what happens to the GUI
+ * It also holds several api's that control basic function of a phone and for audio controls
+ */
 public class EventManager implements FrameManagerListener {
 
-    private AppFrame appFrame;
+    private AppGUI appGUI;
     private final SipManager sipManager;
     private final RTPConnectionManager rtpConnectionManager;
 
     /**
      *
-     * @param sipManager {@link SipManager} for a phone device. The basic functions of a phone will be handled here.
+     * @param sipManager holds all the information and methods of the current sipsession
+     * @param rtpConnectionManager  handles the rtp connection and holds both incoming and outgoing audio threads
      */
     public EventManager(SipManager sipManager, RTPConnectionManager rtpConnectionManager) {
 
@@ -31,39 +31,39 @@ public class EventManager implements FrameManagerListener {
     }
 
     /**
-     * When the user hangs up or on remote cancel or bye.
-     * The GUI gets destroyed
+     * The App GUI gets destroyed and we send a bye to the proxy
      */
     @Override
     public void onHangUp() {
         getPhoneApi().hangup();
 
-        appFrame.hideWindow();
-
-        System.exit(1);
+        appGUI.hideGUI();
     }
 
+    /**
+     * Creates a new AppGUI  {@link AppGUI}
+     * @param userInfo current logged in user info (username, domain)
+     * @param proxyName the name of the callee
+     * @param proxyAddress the address of the callee
+     */
     @Override
     public void onCall(Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
         SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Throwable e) {
-                System.out.println("WARNING: unable to set look and feel, will continue");
-            }
-
-            appFrame = new AppFrame(this, getSoundApi(), userInfo, proxyName, proxyAddress );
-            appFrame.showWindow();
+            appGUI = new AppGUI(this, getSoundApi(), userInfo, proxyName, proxyAddress );
+            appGUI.showGUI();
         });
     }
 
+    /**
+     * Api for easy access to methods that control the audio of the app
+     * @return the sound api
+     */
     public SoundAPI getSoundApi(){
 
         return new SoundAPI() {
 
             @Override
             public void mute() {
-                //todo interrupt the transmit thread? or the targetdataline?
                 rtpConnectionManager.mute();
             }
 
@@ -75,7 +75,10 @@ public class EventManager implements FrameManagerListener {
         };
     }
 
-
+    /**
+     * Api for easy access to methods that control basic functions of a phone
+     * @return the phone api
+     */
     public PhoneAPI getPhoneApi(){
         return new PhoneAPI() {
 
@@ -109,6 +112,7 @@ public class EventManager implements FrameManagerListener {
                 } catch (Throwable e) {
                     throw new IllegalStateException("Unable to hang up the device", e);
                 }
+                System.exit(1);
             }
 
             @Override

@@ -1,4 +1,4 @@
-package com.wisekrakr.communiwise.operations.apis;
+package com.wisekrakr.communiwise.operations;
 
 public interface SoundAPI {
     void mute();

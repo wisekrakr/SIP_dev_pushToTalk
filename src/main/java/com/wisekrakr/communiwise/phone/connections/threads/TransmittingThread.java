@@ -1,6 +1,6 @@
 package com.wisekrakr.communiwise.phone.connections.threads;
 
-import com.wisekrakr.communiwise.phone.audio.G722Encoder;
+import com.wisekrakr.communiwise.phone.audioprocessing.G722Encoder;
 import com.wisekrakr.communiwise.rtp.RTPPacket;
 import com.wisekrakr.communiwise.rtp.RTPParser;
 
@@ -12,6 +12,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.Arrays;
 import java.util.Random;
+
 
 public class TransmittingThread {
     private static final int PIPE_SIZE = 4096;
@@ -125,12 +126,9 @@ public class TransmittingThread {
                             numBytesRead += encodedDataInput.read(buffer, numBytesRead, buffer.length - numBytesRead);
                         }
 
-//                        System.out.println("About to send " + numBytesRead + " bytes ");
-
                         rtpPacket.setData(Arrays.copyOf(buffer, numBytesRead));
                         rtpPacket.setSequenceNumber(sequenceNumber++);
                         rtpPacket.setTimestamp(timestamp);
-
 
                         send(rtpPacket);
                     }

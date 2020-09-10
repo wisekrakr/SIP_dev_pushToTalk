@@ -1,4 +1,4 @@
-package com.wisekrakr.communiwise.phone.sip.ext;
+package com.wisekrakr.communiwise.phone.sip;
 
 public enum SipSessionState {
     /**

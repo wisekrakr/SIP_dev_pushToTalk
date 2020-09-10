@@ -8,7 +8,16 @@ import javafx.scene.Scene;
 
 import java.io.IOException;
 
-public class ControllerJFXPanel extends JFXPanel implements ControllerContext {
+
+/**
+ * Initializes a new JFXPanel. The FXMLoader first loads a fxml file, and this controller gets set to it.
+ * Runs the createScene method that sets the root to the scene and the scene to the controller.
+ *
+ * * This is done like this so that the controller wont be set in the fxml file, but in its runner class
+ * * and we can pass parameters to its constructor.
+ * * Control the app with this controller and fill the components with the parameters that were passed (optional)
+ */
+ public class ControllerJFXPanel extends JFXPanel implements ControllerContext {
 
     private Parent root;
 
@@ -18,7 +27,10 @@ public class ControllerJFXPanel extends JFXPanel implements ControllerContext {
         setScene(scene);
     }
 
-
+    /**
+     * @param fxmlPath path to a fxml file in resources.
+     * @return a new JFXPanel for a JFrame to add onto itself
+     */
     @Override
     public ControllerJFXPanel initialize(String fxmlPath) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml" + fxmlPath));
@@ -33,6 +45,10 @@ public class ControllerJFXPanel extends JFXPanel implements ControllerContext {
         return this;
     }
 
+    /**
+     * Initialized in the controller class and will run immediately after the controller is made.
+     * It will hold the components that need to be filled at initialization, components like: labels, buttons, etc.
+     */
     @Override
     public void initComponents() {
 

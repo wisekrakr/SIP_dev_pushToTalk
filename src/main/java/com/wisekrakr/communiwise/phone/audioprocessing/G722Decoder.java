@@ -1,4 +1,4 @@
-package com.wisekrakr.communiwise.phone.audio;
+package com.wisekrakr.communiwise.phone.audioprocessing;
 
 /*
 G.722[1] is a ITU-T 16 kHz (with 14 bits per sample) wideband speech codec standard operating at 48, 56 and 64 kbps with an encoding frame length of 10 ms.
@@ -6,7 +6,7 @@ Technology of the codec is based on sub-band ADPCM (SB-ADPCM). G.722 sample audi
 10 ms, double that of traditional telephony interfaces, which results in superior audio quality and clarity.
  */
 
-import com.wisekrakr.communiwise.phone.audio.utils.CodecUtil;
+import com.wisekrakr.communiwise.phone.audioprocessing.utils.CodecUtil;
 
 public class G722Decoder {
 

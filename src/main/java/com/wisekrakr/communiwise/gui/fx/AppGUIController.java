@@ -1,7 +1,7 @@
 package com.wisekrakr.communiwise.gui.fx;
 
 import com.wisekrakr.communiwise.operations.EventManager;
-import com.wisekrakr.communiwise.operations.apis.SoundAPI;
+import com.wisekrakr.communiwise.operations.SoundAPI;
 import com.wisekrakr.communiwise.user.SipAccountManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -16,7 +16,12 @@ import java.util.Map;
 
 import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
 
-public class AppController extends ControllerJFXPanel {
+/**
+ * A JavaFX Application controller, but different.
+ * Made with a {@link javafx.embed.swing.JFXPanel} and can therefore be initialized, instead of loaded with the FXMLoader,
+ * and we can pass parameters to it from the JFrame/GUI class {@link AppGUI}
+ */
+public class AppGUIController extends ControllerJFXPanel {
 
     private final EventManager eventManager;
     private final SoundAPI sound;
@@ -35,9 +40,7 @@ public class AppController extends ControllerJFXPanel {
     @FXML
     private ToggleButton toggleButton;
 
-
-
-    public AppController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
+    public AppGUIController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
         this.eventManager = eventManager;
         this.sound = sound;
         this.userInfo = userInfo;
@@ -90,7 +93,7 @@ public class AppController extends ControllerJFXPanel {
         String path = "/images/exit.png";
 
         try {
-            image = new ImageView(String.valueOf(AppFrame.class.getResource(path)));
+            image = new ImageView(String.valueOf(AppGUI.class.getResource(path)));
 
             image.setFitWidth(15);
             image.setFitHeight(15);

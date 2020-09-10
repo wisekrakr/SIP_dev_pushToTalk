@@ -11,4 +11,7 @@ public interface SipManagerListener {
     void onAccepted(String rtpProxy, int remoteRtpPort);
 
     void onRegistered();
+
+    void onCancel();
+
 }

@@ -1,8 +1,6 @@
 package com.wisekrakr.communiwise.phone.sip;
 
 
-import com.wisekrakr.communiwise.phone.sip.ext.SipClient;
-import com.wisekrakr.communiwise.phone.sip.ext.SipSessionState;
 import com.wisekrakr.communiwise.user.SipAccountManager;
 import gov.nist.javax.sdp.SessionDescriptionImpl;
 import gov.nist.javax.sdp.parser.SDPAnnounceParser;
@@ -110,7 +108,7 @@ public class SipManager implements SipClient {
 
         Properties properties = new Properties();
 
-        properties.setProperty("javax.sip.OUTBOUND_PROXY", proxyHost + ":" + proxyPort + "/" + sipTransport);          // TODO: here? it's a router parameter
+        properties.setProperty("javax.sip.OUTBOUND_PROXY", proxyHost + ":" + proxyPort + "/" + sipTransport);
         properties.setProperty("javax.sip.STACK_NAME", STACK_NAME);
         properties.setProperty("gov.nist.javax.sip.MAX_MESSAGE_SIZE", Integer.toString(MAX_MESSAGE_SIZE));
 
@@ -123,7 +121,6 @@ public class SipManager implements SipClient {
 
         properties.setProperty("gov.nist.javax.sip.TRACE_LEVEL", Integer.toString(traceLevel));
 
-        // Drop the client connection after we are done with the transaction.
         properties.setProperty("gov.nist.javax.sip.CACHE_CLIENT_CONNECTIONS", "false");
 
         sipStack = sipFactory.createSipStack(properties);
@@ -140,18 +137,18 @@ public class SipManager implements SipClient {
                 new SipListener() {
                     @Override
                     public void processRequest(RequestEvent requestEvent) {
-//                        if (requestEvent.getServerTransaction() == null) {
-//                            System.out.println("Sending request\n" + requestEvent.getRequest());
-//                            try {
-//                                sipProvider.sendRequest(requestEvent.getRequest());
-//
-//                            } catch (Exception e) {
-//                                System.out.println("Whatever " + e.getMessage());
-//                                e.printStackTrace();
-//
-//                            }
-//                            return;
-//                        }
+                        if (requestEvent.getServerTransaction() == null) {
+                            System.out.println("Sending request\n" + requestEvent.getRequest());
+                            try {
+                                sipProvider.sendRequest(requestEvent.getRequest());
+
+                            } catch (Exception e) {
+                                System.out.println("Whatever " + e.getMessage());
+                                e.printStackTrace();
+
+                            }
+                            return;
+                        }
 
                         System.out.println("Processing server request\n" + requestEvent.getRequest());
                         System.out.println("SipSessionState :" + sipSessionState);
@@ -165,8 +162,6 @@ public class SipManager implements SipClient {
                                 transaction = sipProvider.getNewServerTransaction(request);
                             }
 
-                            SIPMessage sp = (SIPMessage) request;
-
                             System.out.println("\n\nRequest " + request.getMethod() + " received at " + sipStack.getStackName() + " with server transaction id " + transaction);
 
                             SipURI uri = (SipURI) ((FromHeader) request.getHeader(FromHeader.NAME)).getAddress().getURI();
@@ -175,14 +170,6 @@ public class SipManager implements SipClient {
                             switch (request.getMethod()) {
                                 case Request.MESSAGE:
                                     sendResponse(transaction, Response.OK);
-
-                                    String message = null;
-                                    try {
-                                        message = sp.getMessageContent();
-                                    } catch (UnsupportedEncodingException e) {
-                                        System.out.println("ERROR: unsupported encoding receiving message");
-                                        break;
-                                    }
 
                                     break;
 
@@ -201,6 +188,7 @@ public class SipManager implements SipClient {
                                     }
 
                                     break;
+
                                 case Request.ACK:
                                     System.out.println("Process Ack: got an ACK! " + request);
 
@@ -212,9 +200,8 @@ public class SipManager implements SipClient {
                                         System.out.println("Waiting for INFO");
                                     }
 
-
-
                                     break;
+
                                 case Request.INVITE:
                                     if (sipSessionState != SipSessionState.IDLE
                                             && sipSessionState != SipSessionState.READY
@@ -274,8 +261,6 @@ public class SipManager implements SipClient {
 
                             currentCall = clientTransaction;
 
-                            ToHeader toHeader;
-
                             if (processedResponse.getStatusCode() == Response.PROXY_AUTHENTICATION_REQUIRED || processedResponse.getStatusCode() == Response.UNAUTHORIZED) {
                                 System.out.println("Go for Authentication");
 
@@ -293,14 +278,8 @@ public class SipManager implements SipClient {
 
                                         sipSessionState = SipSessionState.IDLE;
 
-                                        toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
-
-                                        String domain = toHeader.getAddress().toString();
-
-                                        domain = domain.substring(domain.indexOf("@") + 1);
-                                        domain = domain.substring(0, domain.indexOf(">"));
-
                                         listener.onRegistered();
+
                                         break;
 
                                     case Request.INVITE:
@@ -317,7 +296,7 @@ public class SipManager implements SipClient {
 
                                         MediaDescription incomingMediaDescriptor = (MediaDescription) sessionDescription.getMediaDescriptions(false).get(0);
 
-                                        toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
+                                        ToHeader toHeader = (ToHeader) processedResponse.getHeader(ToHeader.NAME);
 
                                         String proxyName = toHeader.getAddress().toString();
 
@@ -348,24 +327,30 @@ public class SipManager implements SipClient {
                                     case Request.BYE:
                                         sipSessionState = SipSessionState.IDLE;
                                         System.out.println("--- Got 200 OK in UAC outgoing BYE from host");
+                                        listener.onCancel();
 
                                         break;
+
                                     default:
                                         throw new IllegalStateException("Unknown request type in response: " + responseEvent);
                                 }
 
                             } else if (processedResponse.getStatusCode() == Response.DECLINE /*|| processedResponse.getStatusCode() == Response.TEMPORARILY_UNAVAILABLE*/) {
                                 System.out.println("CALL DECLINED");
+                                listener.onCancel();
                             } else if (processedResponse.getStatusCode() == Response.NOT_FOUND) {
                                 System.out.println("NOT FOUND");
+                                listener.onCancel();
                             } else if (processedResponse.getStatusCode() == Response.ACCEPTED) {
                                 System.out.println("ACCEPTED");
                             } else if (processedResponse.getStatusCode() == Response.BUSY_HERE) {
                                 System.out.println("BUSY");
+                                listener.onCancel();
                             } else if (processedResponse.getStatusCode() == Response.RINGING) {
                                 System.out.println("RINGING");
                             } else if (processedResponse.getStatusCode() == Response.SERVICE_UNAVAILABLE) {
                                 System.out.println("SERVICE_UNAVAILABLE");
+                                listener.onCancel();
                             } else if (processedResponse.getStatusCode() == Response.TRYING) {
                                 System.out.println("Trying...");
                             } else if (processedResponse.getStatusCode() == Response.FORBIDDEN) {
@@ -444,15 +429,6 @@ public class SipManager implements SipClient {
 
     /************                               ACTIONS                             ************/
 
-
-    @Override
-    public void sendTextMessage(String recipient, String message) {
-        try {
-            this.sipProvider.getNewClientTransaction(makeMessageRequest(recipient, message)).sendRequest();
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to send message", e);
-        }
-    }
 
     @Override
     public void login(String realm, String username, String password, String domain, String fromAddress) {
@@ -623,10 +599,8 @@ public class SipManager implements SipClient {
     public Request makeInviteRequest(String to, int localRtpPort) throws ParseException, InvalidArgumentException {
         Request callRequest = createRequest(addressFactory.createURI(to), clientAddress, addressFactory.createAddress(to), Request.INVITE, null);
 
-        // Create ContentTypeHeader
         ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
 
-        // Create the contact name address.
         SipURI contactURI = addressFactory.createSipURI(accountManager.getUserInfo().get(SipAccountManager.UserInfoPart.USERNAME.getInfoPart()), localSipAddress);
         contactURI.setPort(localSipPort);
 
@@ -655,13 +629,6 @@ public class SipManager implements SipClient {
 
     private CSeqHeader nextRequestSequenceNumber(String method) throws ParseException, InvalidArgumentException {
         return headerFactory.createCSeqHeader(sequenceNumberGenerator.incrementAndGet(), method);
-    }
-
-    public Request makeMessageRequest(String to, String content) throws ParseException, InvalidArgumentException {
-        URI toAddress = addressFactory.createURI(to);
-        Address toNameAddress = addressFactory.createAddress(toAddress);
-
-        return createRequest(toAddress, clientAddress, toNameAddress, Request.MESSAGE, content);
     }
 
     private String currentCallTag(){

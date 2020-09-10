@@ -15,26 +15,15 @@ import java.net.InetSocketAddress;
 
 import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
 
-public class PTTApp implements Serializable {
+public class PTTApp  implements Serializable {
 
     private static final AudioFormat FORMAT = new AudioFormat(16000, 16, 1, true, true);
+    private static final int DESIRED_HEIGHT = 100;
+    private static final int DESIRED_WIDTH = 400;
 
     private RTPConnectionManager rtpConnectionManager;
     private EventManager eventManager;
     private SipAccountManager accountManager;
-
-
-    private static void printHelp(String message) {
-        System.out.println(message);
-        System.out.println("Arguments: <local address> <audio input> <audio output>");
-
-        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
-
-        System.out.println("Available: ");
-        for (int i = 0; i < mixers.length; i++) {
-            System.out.println(String.format("%-50s %50s %30s %30s", mixers[i].getName(), mixers[i].getDescription(), mixers[i].getVersion(), mixers[i].getVendor()));
-        }
-    }
 
     public static void main(String[] args) {
 
@@ -118,7 +107,6 @@ public class PTTApp implements Serializable {
         }
 
         application.run();
-
     }
 
     private static void optionNotThere(CommandLine cmd, String option, String message, Options options, HelpFormatter formatter){
@@ -143,6 +131,8 @@ public class PTTApp implements Serializable {
         return parser.parse(options, strings);
     }
 
+
+
     private void run() {
 
 
@@ -150,6 +140,7 @@ public class PTTApp implements Serializable {
 
     private void initialize(TargetDataLine inputLine, SourceDataLine outputLine, String username, String localAddress, String proxyExtension, String proxyHost, String password) throws Exception {
 
+        //todo ports?
         SipManager sipManager = new SipManager(proxyHost, 5060, localAddress, 5080, "udp").
                 logging("server.log", "debug.log", 16).
                 listener(new SipManagerListener() {
@@ -165,14 +156,15 @@ public class PTTApp implements Serializable {
                     @Override
                     public void callConfirmed(String name, String rtpHost, int rtpPort) {
                         InetSocketAddress proxyAddress = new InetSocketAddress(rtpHost, rtpPort);
+
+                        eventManager.onCall(accountManager.getUserInfo(),name, proxyAddress);
+
                         try {
                             rtpConnectionManager.connectRTPAudio(proxyAddress);
 
                         } catch (Throwable e) {
                             throw new IllegalStateException("Unable to connect call", e);
                         }
-
-                        eventManager.onCall(accountManager.getUserInfo(),name, proxyAddress);
                     }
 
 
@@ -194,6 +186,11 @@ public class PTTApp implements Serializable {
                     @Override
                     public void onRegistered() {
                         eventManager.getPhoneApi().initiateCall(make(proxyExtension,proxyHost));
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        eventManager.onHangUp();
                     }
 
                     @Override
@@ -220,5 +217,6 @@ public class PTTApp implements Serializable {
         }
 
         eventManager.getPhoneApi().register(realm, proxyHost, username, password, make(username, proxyHost));
+
     }
 }

@@ -21,10 +21,10 @@
  * Chengxiang Lu and Alex Hauptmann
  *
  */
-package com.wisekrakr.communiwise.phone.audio;
+package com.wisekrakr.communiwise.phone.audioprocessing;
 
 
-import com.wisekrakr.communiwise.phone.audio.utils.CodecUtil;
+import com.wisekrakr.communiwise.phone.audioprocessing.utils.CodecUtil;
 
 public class G722Encoder  {
 

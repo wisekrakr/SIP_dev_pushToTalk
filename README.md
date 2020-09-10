@@ -8,7 +8,7 @@
 
 
 
-<a href="https://twitter.com/intent/follow?screen_name=shields_io">
+<a href="https://twitter.com/intent/follow?screen_name=wisekrakr">
         <img src="https://img.shields.io/twitter/follow/wisekrakr?style=social&logo=twitter"
             alt="follow on Twitter"></a>
             
@@ -53,6 +53,27 @@ These are the dependencies used in the project:
 
 
 ####USAGE
+
+In program arguments use the following:
+- **-ip <ip address>:** _Your IP address_
+- **-i <audio input device>:** _Name of your audio input device to be used_
+- **-o <audio output device>:** _Name of your audio output device to be used_
+- **-u <username>:** _Your username_
+- **-d <domain>:** _The domain/server registered on_
+- **-p <password>:** _Your password_
+- **-e <extension>:** _The extension that will be called immediately after registering/logging in._
+
+> **For example**, :
+> - **-ip** `127.0.0.1`
+> - **-i** `Microphone (Best Mics V2)`
+> - **-o** `Speakers (Big Boi Speakers)`
+> - **-u** `wisekrakr`
+> - **-d** `asterisk.local`
+> - **-p** `1101101`
+> - **-e** `666`
+> - **-d** `asterisk.local`
+>
+
 SIP account configuration settings:
 - **Username:** _name used to register on the domain_
 - **Domain:** _domain name_ (like: asterisk.<whatever>)
@@ -64,20 +85,11 @@ SIP account configuration settings:
 
 > **For example**, if you have SIP account `666@asterisk.local` with password `1101101`, configuration settings you would use:
 > - **Display Name:** `666@asterisk.local`
-> - **Username:** `myusername`
+> - **Username:** `wisekrakr`
 > - **Password:** `1101101`
 > - **Realm:** `asterisk`
 > - **SIP Registrar:** `asterisk.local`
 >
-
-In program arguments use the following:
-- **-ip <ip address>:** _Your IP address_
-- **-i <audio input device>:** _Your audio input device to be used_
-- **-o <audio output device>:** _Your audio output device to be used_
-- **-u <username>:** _Your username_
-- **-d <domain>:** _The domain/server registered on_
-- **-p <password>:** _Your password_
-- **-e <extension>:** _The extension that will be called immediately after registering/logging in._
 
 It will register/log you in automatically, with the help of commons cli. When registration is successful, the program will call the extension.
 
