@@ -3,13 +3,24 @@ package com.wisekrakr.communiwise.gui.fx;
 import com.wisekrakr.communiwise.operations.EventManager;
 import com.wisekrakr.communiwise.operations.SoundAPI;
 import com.wisekrakr.communiwise.user.SipAccountManager;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -30,6 +41,7 @@ public class AppGUIController extends ControllerJFXPanel {
     private final InetSocketAddress proxyAddress;
 
     private boolean isMuted;
+    private int counter;
 
     @FXML
     private Label username,domain, proxy;
@@ -38,7 +50,7 @@ public class AppGUIController extends ControllerJFXPanel {
     @FXML
     private AnchorPane textPane;
     @FXML
-    private ToggleButton toggleButton;
+    private Button talkButton;
 
     public AppGUIController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
         this.eventManager = eventManager;
@@ -53,21 +65,21 @@ public class AppGUIController extends ControllerJFXPanel {
         eventManager.onHangUp();
     }
 
-    @FXML
+
     private void talk(){
         if(isMuted){
-            if(toggleButton.getText().equals("Muted")){
+            if(talkButton.getText().equals("Muted")){
 
-                toggleButton.setText("Talking!");
-                toggleButton.setTextFill(Color.GREEN);
+                talkButton.setText("Talking!");
+                talkButton.setTextFill(Color.GREEN);
 
                 sound.unmute();
             }
         }else{
-            if(toggleButton.getText().equals("Talking!")){
+            if(talkButton.getText().equals("Talking!")){
 
-                toggleButton.setText("Muted");
-                toggleButton.setTextFill(Color.RED);
+                talkButton.setText("Muted");
+                talkButton.setTextFill(Color.RED);
 
                 sound.mute();
             }
@@ -85,7 +97,28 @@ public class AppGUIController extends ControllerJFXPanel {
         closeButton.setGraphic(addIconForButton());
 
         textPane.setMouseTransparent(true);
+
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(500), actionEvent -> { talk(); }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                talkButton.armedProperty().addListener(new ChangeListener<Boolean>() {
+
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                        if( newValue) {
+                            timeline.play();
+                        } else {
+                            timeline.stop();
+                        }
+                    }
+                });
+            }
+        });
     }
+
 
     private static ImageView addIconForButton(){
         ImageView image;
