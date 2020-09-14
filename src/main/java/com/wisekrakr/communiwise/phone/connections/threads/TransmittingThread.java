@@ -70,30 +70,27 @@ public class TransmittingThread {
         }, "Capture thread");
         captureThread.setDaemon(true);
 
-        encoderThread = new Thread(new Runnable() {
+        encoderThread = new Thread(() -> {
+            try {
+                byte[] rawBuffer = new byte[BUFFER_SIZE];
+                byte[] encodingBuffer = new byte[BUFFER_SIZE];
 
-            public void run() {
-                try {
-                    byte[] rawBuffer = new byte[BUFFER_SIZE];
-                    byte[] encodingBuffer = new byte[BUFFER_SIZE];
+                while (!Thread.currentThread().isInterrupted()) {
 
-                    while (!Thread.currentThread().isInterrupted()) {
+                    int read = rawDataInput.read(rawBuffer);
 
-                        int read = rawDataInput.read(rawBuffer);
+                    int encoded = g722Encoder.encode(encodingBuffer, rawBuffer, read);
 
-                        int encoded = g722Encoder.encode(encodingBuffer, rawBuffer, read);
+                    encodedDataOutput.write(encodingBuffer, 0, encoded);
 
-                        encodedDataOutput.write(encodingBuffer, 0, encoded);
-
-                    }
-                    encodedDataOutput.close();
-                    rawDataInput.close();
-
-
-                    System.out.println("Encoding thread has stopped");
-                } catch (Throwable e) {
-                    throw new IllegalStateException("Encoding thread has stopped unexpectedly ",e);
                 }
+                encodedDataOutput.close();
+                rawDataInput.close();
+
+
+                System.out.println("Encoding thread has stopped");
+            } catch (Throwable e) {
+                throw new IllegalStateException("Encoding thread has stopped unexpectedly ",e);
             }
         }, "Encoding thread");
         encoderThread.setDaemon(true);
@@ -186,7 +183,7 @@ public class TransmittingThread {
 
         System.out.println("MUTE === > TargetDataLine is running: " + targetDataLine.isRunning());
         isMuted = true;
-        
+
     }
 
     public void unmute(){
