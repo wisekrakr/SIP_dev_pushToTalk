@@ -6,12 +6,8 @@ import gov.nist.javax.sdp.SessionDescriptionImpl;
 import gov.nist.javax.sdp.parser.SDPAnnounceParser;
 import gov.nist.javax.sip.SipStackExt;
 import gov.nist.javax.sip.clientauthutils.AuthenticationHelper;
-import gov.nist.javax.sip.message.SIPMessage;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.sdp.MediaDescription;
-import javax.sdp.SdpFactory;
-import javax.sdp.SessionDescription;
 import javax.sip.*;
 import javax.sip.address.Address;
 import javax.sip.address.AddressFactory;
@@ -22,7 +18,6 @@ import javax.sip.message.Message;
 import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Collections;
@@ -278,7 +273,7 @@ public class SipManager implements SipClient {
 
                                         sipSessionState = SipSessionState.IDLE;
 
-                                        listener.onRegistered();
+                                        listener.onLoggedIn();
 
                                         break;
 
@@ -509,71 +504,6 @@ public class SipManager implements SipClient {
                 throw new IllegalStateException("Could not send bye request", e);
             }
         }
-    }
-
-    @Override
-    public void acceptCall(final int port) {
-        if (waitingCall == null) {
-            throw new IllegalStateException("No call waiting to be accepted");
-        }
-
-        try {
-            Response responseOK = messageFactory.createResponse(Response.OK, waitingCall.getRequest());
-            responseOK.addHeader(headerFactory.createContactHeader(clientAddress));
-
-            ToHeader toHeader = (ToHeader) responseOK.getHeader(ToHeader.NAME);
-            FromHeader fromHeader = (FromHeader) responseOK.getHeader(FromHeader.NAME);
-
-            toHeader.setTag(currentCallTag());
-            responseOK.addHeader(toHeader);
-
-            // TODO: this line should be generated (e.g. it announces codecs now
-            // TODO: cf https://tools.ietf.org/html/rfc3555  https://andrewjprokop.wordpress.com/2013/09/30/understanding-session-description-protocol-sdp/
-
-            String sdpData =
-                      "v=0\r\n"
-                    + "o=yomama 1234 1234 IN IP4 " + localSipAddress + "\r\n"
-                    + "s=Communwise 0.9.0 beta\r\n"
-                    + "c=IN IP4 " + localSipAddress + "\r\n"
-                    + "t=0 0\r\n"
-                    + "m=audio " + port + " RTP/AVP 9\r\n"
-//                    + "a=rtpmap:8 PCMA/8000\r\n";
-                    + "a=rtpmap:9 G722/8000\r\n";
-//                    + "a=rtpmap:18 G729A/8000\r\n"
- //                   + "a=ptime:20\r\n";
-
-
-            ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
-            responseOK.setContent(sdpData.getBytes(), contentTypeHeader);
-
-            waitingCall.sendResponse(responseOK);
-
-            String sdpContent =  new String(waitingCall.getRequest().getRawContent());
-            SessionDescription requestSDP = SdpFactory.getInstance().createSessionDescription(sdpContent);
-
-            String rtpPort = StringUtils.substring(requestSDP.toString(),requestSDP.toString().lastIndexOf("m=audio") + 8, requestSDP.toString().lastIndexOf("m=audio") + 13);
-
-            listener.onAccepted(proxyHost, Integer.parseInt(rtpPort));
-
-//            sipSessionState = SipSessionState.ESTABLISHED;
-        } catch (Throwable e) {
-            throw new IllegalStateException("Unable to accept call", e);
-        }
-    }
-
-    @Override
-    public void reject() {
-        if (waitingCall == null) {
-            throw new IllegalStateException("No call waiting to be accepted");
-        }
-
-        try {
-            sendResponse(waitingCall, Response.DECLINE);
-
-        } catch (Throwable e) {
-            throw new IllegalStateException("Unable to send decline", e);
-        }
-        sipSessionState = SipSessionState.IDLE;
     }
 
     private void sendResponse(ServerTransaction serverTransaction, int status) throws ParseException, SipException, InvalidArgumentException {

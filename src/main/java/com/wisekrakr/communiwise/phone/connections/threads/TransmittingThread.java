@@ -24,6 +24,7 @@ public class TransmittingThread {
     private Thread rtpSenderThread;
 
     private final G722Encoder g722Encoder = new G722Encoder(2000);
+    private boolean isMuted;
 
     public TransmittingThread(DatagramSocket socket, TargetDataLine targetDataLine) {
         this.socket = socket;
@@ -44,6 +45,7 @@ public class TransmittingThread {
                 targetDataLine.start();
 
                 while (!Thread.currentThread().isInterrupted()) {
+
                     int actuallyRead = targetDataLine.read(buffer, 0, buffer.length);
 
                     rawDataOutput.write(buffer, 0, actuallyRead);
@@ -53,6 +55,7 @@ public class TransmittingThread {
 
                         break;
                     }
+
                 }
 
                 rawDataOutput.close();
@@ -61,7 +64,8 @@ public class TransmittingThread {
 
                 System.out.println("Capture thread has stopped");
             } catch (Throwable e) {
-                System.out.println("Capture thread has stopped unexpectedly " + e.getMessage());
+                throw new IllegalStateException("Capture thread has stopped unexpectedly ",e);
+
             }
         }, "Capture thread");
         captureThread.setDaemon(true);
@@ -74,11 +78,13 @@ public class TransmittingThread {
                     byte[] encodingBuffer = new byte[BUFFER_SIZE];
 
                     while (!Thread.currentThread().isInterrupted()) {
+
                         int read = rawDataInput.read(rawBuffer);
 
                         int encoded = g722Encoder.encode(encodingBuffer, rawBuffer, read);
 
                         encodedDataOutput.write(encodingBuffer, 0, encoded);
+
                     }
                     encodedDataOutput.close();
                     rawDataInput.close();
@@ -86,7 +92,7 @@ public class TransmittingThread {
 
                     System.out.println("Encoding thread has stopped");
                 } catch (Throwable e) {
-                    System.out.println("Encoding thread has stopped unexpectedly " + e);
+                    throw new IllegalStateException("Encoding thread has stopped unexpectedly ",e);
                 }
             }
         }, "Encoding thread");
@@ -131,13 +137,15 @@ public class TransmittingThread {
                         rtpPacket.setTimestamp(timestamp);
 
                         send(rtpPacket);
+
                     }
 
                     encodedDataInput.close();
 
                     System.out.println("Sending thread has stopped");
                 } catch (Throwable e) {
-                    System.out.println("Sending thread has stopped unexpectedly " + e.getMessage());
+                    throw new IllegalStateException("Sending thread has stopped unexpectedly ",e);
+
                 }
             }
 
@@ -148,9 +156,11 @@ public class TransmittingThread {
 
                 if (!socket.isClosed()) {
                     try {
-                        socket.send(datagramPacket);
-                    } catch (IOException | SecurityException e) {
-                        System.out.println(" error while sending datagram packet " + e);
+                        if(!isMuted){
+                            socket.send(datagramPacket);
+                        }
+                    } catch (Throwable e) {
+                        throw new IllegalStateException(" error while sending datagram packet ",e);
                     }
                 }
             }
@@ -170,26 +180,21 @@ public class TransmittingThread {
         rtpSenderThread.interrupt();
     }
 
-    public void mute() throws InterruptedException {
-        System.out.println("    MUTED   transmitting " + targetDataLine.available());
 
-//        captureThread.wait();
-//        encoderThread.wait();
-//        rtpSenderThread.wait();
 
+    public void mute() {
+
+        System.out.println("MUTE === > TargetDataLine is running: " + targetDataLine.isRunning());
+        isMuted = true;
+        
     }
 
     public void unmute(){
-        System.out.println("    UNMUTED   transmitting " + targetDataLine.available());
-
-//        captureThread.notify();
-//        encoderThread.notify();
-//        rtpSenderThread.notify();
+        System.out.println("UNMUTE === > TargetDataLine is running: " + targetDataLine.isRunning());
+        isMuted = false;
     }
-
 
     public static final int SAMPLE_SIZE = 16;
     public static final int BUFFER_SIZE = SAMPLE_SIZE * 20;
-
 
 }

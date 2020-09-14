@@ -93,19 +93,6 @@ public class EventManager implements FrameManagerListener {
             }
 
             @Override
-            public void accept(String sipAddress) {
-                sipManager.acceptCall(rtpConnectionManager.getSocket().getLocalPort());
-
-                proxyAddress = sipAddress;
-            }
-
-            @Override
-            public void reject() {
-                sipManager.reject();
-            }
-
-
-            @Override
             public void hangup() {
                 try {
                     sipManager.hangup(proxyAddress);
@@ -116,7 +103,7 @@ public class EventManager implements FrameManagerListener {
             }
 
             @Override
-            public void register(String realm, String domain, String username, String password, String fromAddress) {
+            public void login(String realm, String domain, String username, String password, String fromAddress) {
                 System.out.println("LOGGING IN....");
                 sipManager.login(realm, username, password, domain, fromAddress);
             }

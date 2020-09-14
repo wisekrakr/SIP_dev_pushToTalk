@@ -40,15 +40,19 @@ public class AppGUI extends JFrame {
     public void prepareGUI() {
         setUndecorated(false);
         setAlwaysOnTop(true);
+        setResizable(false);
 
         setBounds(screenSize.width + DESIRED_WIDTH, screenSize.height, DESIRED_WIDTH, DESIRED_HEIGHT);
         setLocationRelativeTo(null);
 
-        AppGUIController controller = (AppGUIController) new AppGUIController( eventManager, sound, userInfo, proxyName, proxyAddress).initialize("/app.fxml");
+        AppGUIController controller = (AppGUIController) new AppGUIController( this,eventManager, sound, userInfo, proxyName, proxyAddress).initialize("/app.fxml");
         controller.initComponents();
 
         add(controller,BorderLayout.CENTER);
+
     }
+
+
 
     public void showGUI() {
         setVisible(true);
@@ -56,4 +60,6 @@ public class AppGUI extends JFrame {
     public void hideGUI(){
         setVisible(false);
     }
+
+
 }

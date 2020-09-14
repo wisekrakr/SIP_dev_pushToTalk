@@ -8,9 +8,7 @@ public interface SipManagerListener {
 
     void authenticationFailed();
 
-    void onAccepted(String rtpProxy, int remoteRtpPort);
-
-    void onRegistered();
+    void onLoggedIn();
 
     void onCancel();
 

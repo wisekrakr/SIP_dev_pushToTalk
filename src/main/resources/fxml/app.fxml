@@ -9,12 +9,12 @@
    <children>
       <AnchorPane prefHeight="70.0" prefWidth="375.0">
          <children>
-            <Button fx:id="talkButton" mnemonicParsing="false" prefHeight="70.0" prefWidth="376.0" style="-fx-background-color: transparent;" text="Muted" textFill="RED">
+            <Button fx:id="talkButton" mnemonicParsing="false" onMousePressed="#pushed" onMouseReleased="#released" prefHeight="70.0" prefWidth="376.0" style="-fx-background-color: transparent;" text="Push to Talk" textFill="RED">
                <font>
                   <Font name="FilmotypeMeredith-Regular" size="32.0" />
                </font>
             </Button>
-            <Button fx:id="closeButton" alignment="CENTER" contentDisplay="CENTER" layoutX="348.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#close" prefHeight="17.0" prefWidth="27.0" textAlignment="CENTER" />
+            <Button fx:id="closeButton" alignment="CENTER" contentDisplay="CENTER" layoutX="348.0" layoutY="1.0" mnemonicParsing="false" onAction="#close" prefHeight="17.0" prefWidth="27.0" textAlignment="CENTER" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="textPane" prefHeight="70.0" prefWidth="375.0">

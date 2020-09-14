@@ -37,8 +37,8 @@ import java.io.IOException;
         loader.setController(this);
         try {
             loader.load();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (Throwable t) {
+            throw new IllegalArgumentException("Could not load fxml file: " + fxmlPath, t);
         }
         root = loader.getRoot();
         Platform.runLater(this::createScene);

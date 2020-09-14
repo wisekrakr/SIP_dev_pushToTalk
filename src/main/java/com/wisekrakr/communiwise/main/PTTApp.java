@@ -9,7 +9,6 @@ import com.wisekrakr.communiwise.user.SipAccountManager;
 import org.apache.commons.cli.*;
 
 import javax.sound.sampled.*;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
@@ -18,12 +17,11 @@ import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
 public class PTTApp  implements Serializable {
 
     private static final AudioFormat FORMAT = new AudioFormat(16000, 16, 1, true, true);
-    private static final int DESIRED_HEIGHT = 100;
-    private static final int DESIRED_WIDTH = 400;
 
     private RTPConnectionManager rtpConnectionManager;
     private EventManager eventManager;
     private SipAccountManager accountManager;
+
 
     public static void main(String[] args) {
 
@@ -36,21 +34,18 @@ public class PTTApp  implements Serializable {
 
         try {
             cmd = commandLineParser(options, args);
-        } catch (ParseException e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            throw new IllegalStateException("Missing option(s) in program arguments", t);
         }
 
-        final PrintWriter writer = new PrintWriter(System.out);
-        formatter.printUsage(writer,80,"CommUniWise Push-to-talk SIP Phone", options);
-        writer.flush();
+        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
 
-        optionNotThere(cmd, "i", "You have to assign an audio input device", options, formatter);
-        optionNotThere(cmd, "o", "You have to assign an audio output device", options, formatter);
+        dataLineNotThere(cmd, "i",  options,mixers, formatter);
+        dataLineNotThere(cmd, "o",  options,mixers, formatter);
 
         PTTApp application = new PTTApp();
 
         try {
-            Mixer.Info[] mixers = AudioSystem.getMixerInfo();
 
             TargetDataLine inputLine = null;
             SourceDataLine outputLine = null;
@@ -65,11 +60,17 @@ public class PTTApp  implements Serializable {
             }
 
             if (inputLine == null) {
+
                 formatter.printHelp("Input line not found " , options);
+                dataLineNotThere(cmd, "i",  options,mixers, formatter);
+
                 System.exit(1);
             }
             if (outputLine == null) {
+
                 formatter.printHelp("Output line not found " ,options);
+                dataLineNotThere(cmd, "o",  options,mixers, formatter);
+
                 System.exit(1);
             }
 
@@ -109,9 +110,45 @@ public class PTTApp  implements Serializable {
         application.run();
     }
 
+    /**
+     * Looks if there are no options missing in the program arguments.
+     * If there are options missing then the app stops.
+     * @param cmd Command line with all the options.
+     * @param option the specific audio option to search for (either u, p, ip, d or e)
+     * @param message string that is shown if the option in missing
+     * @param options the options object that holds all the options
+     * @param formatter the helpformatter that will print a message
+     */
     private static void optionNotThere(CommandLine cmd, String option, String message, Options options, HelpFormatter formatter){
         if(!cmd.hasOption(option)){
             formatter.printHelp("The -" + option + " is missing from the arguments", message, options,"Thank you for using a Wisekrakr product");
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Looks for audio devices when no devices have been put in the program arguments.
+     * If no devices have been put, then the app stops.
+     * @param cmd Command line with all the options.
+     * @param option the specific audio option to search for (either o (output) or i (input)
+     * @param options the options object that holds all the options
+     * @param mixers  AudioSystem.getMixerInfo()
+     * @param formatter the helpformatter that will print a message
+     */
+    private static void dataLineNotThere(CommandLine cmd,String option,Options options,Mixer.Info[] mixers,HelpFormatter formatter){
+
+        if(!cmd.hasOption(option)){
+            if(option.equals("i")){
+                formatter.printHelp("Input device must be assigned", options);
+            }
+            if(option.equals("o")){
+                formatter.printHelp("Output device must be assigned", options);
+            }
+
+            System.out.println("Available devices: ");
+            for (int i = 0; i < mixers.length; i++) {
+                System.out.println(String.format("%-50s %50s %30s %30s", mixers[i].getName(), mixers[i].getDescription(), mixers[i].getVersion(), mixers[i].getVendor()));
+            }
             System.exit(1);
         }
     }
@@ -123,15 +160,13 @@ public class PTTApp  implements Serializable {
                 .addOption("d", "domain", true, "Domain you are registered on")
                 .addOption("e", "extension", true, "Extension you want to call")
                 .addOption("ip", "ipAddress", true, "Your IP Address")
-                .addRequiredOption("i", "inputLine", true, "Audio input device for the target data line")
-                .addRequiredOption("o", "outputLine", true, "Audio output device for the source data line");
+                .addOption("i", "inputLine", true, "Audio input device for the target data line")
+                .addOption("o", "outputLine", true, "Audio output device for the source data line");
 
         CommandLineParser parser = new DefaultParser();
 
         return parser.parse(options, strings);
     }
-
-
 
     private void run() {
 
@@ -161,30 +196,15 @@ public class PTTApp  implements Serializable {
 
                         try {
                             rtpConnectionManager.connectRTPAudio(proxyAddress);
+                            rtpConnectionManager.mute();
 
                         } catch (Throwable e) {
                             throw new IllegalStateException("Unable to connect call", e);
                         }
                     }
 
-
                     @Override
-                    public void onAccepted(String rtpProxy, int remoteRtpPort) {
-                        String proxy = rtpProxy.substring(rtpProxy.lastIndexOf("@") + 1);
-
-                        InetSocketAddress proxyAddress = new InetSocketAddress(proxy, remoteRtpPort);
-
-                        try {
-                            rtpConnectionManager.connectRTPAudio(proxyAddress);
-                        } catch (Throwable e) {
-                            System.out.println("Unable to connect: " + e);
-
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onRegistered() {
+                    public void onLoggedIn() {
                         eventManager.getPhoneApi().initiateCall(make(proxyExtension,proxyHost));
                     }
 
@@ -216,7 +236,7 @@ public class PTTApp  implements Serializable {
             realm = proxyHost.substring(0, dot);
         }
 
-        eventManager.getPhoneApi().register(realm, proxyHost, username, password, make(username, proxyHost));
+        eventManager.getPhoneApi().login(realm, proxyHost, username, password, make(username, proxyHost));
 
     }
 }

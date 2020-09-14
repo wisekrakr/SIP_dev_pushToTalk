@@ -10,9 +10,11 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
@@ -20,8 +22,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
+import javax.swing.*;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -34,13 +39,14 @@ import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
  */
 public class AppGUIController extends ControllerJFXPanel {
 
+    private final AppGUI appGUI;
     private final EventManager eventManager;
     private final SoundAPI sound;
     private final Map<String, String> userInfo;
     private final String proxyName;
     private final InetSocketAddress proxyAddress;
 
-    private boolean isMuted;
+    private boolean isMuted = true;
     private int counter;
 
     @FXML
@@ -48,16 +54,18 @@ public class AppGUIController extends ControllerJFXPanel {
     @FXML
     private Button closeButton;
     @FXML
-    private AnchorPane textPane;
+    private AnchorPane textPane, container;
     @FXML
     private Button talkButton;
 
-    public AppGUIController(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
+    public AppGUIController(AppGUI appGUI, EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
+        this.appGUI = appGUI;
         this.eventManager = eventManager;
         this.sound = sound;
         this.userInfo = userInfo;
         this.proxyName = proxyName;
         this.proxyAddress = proxyAddress;
+
     }
 
     @FXML
@@ -65,27 +73,20 @@ public class AppGUIController extends ControllerJFXPanel {
         eventManager.onHangUp();
     }
 
+    @FXML
+    private void pushed(){
+        talkButton.setText("Talking!");
+        talkButton.setTextFill(Color.GREEN);
 
-    private void talk(){
-        if(isMuted){
-            if(talkButton.getText().equals("Muted")){
+        sound.unmute();
+    }
 
-                talkButton.setText("Talking!");
-                talkButton.setTextFill(Color.GREEN);
+    @FXML
+    private void released(){
+        talkButton.setText("Push to Talk");
+        talkButton.setTextFill(Color.RED);
 
-                sound.unmute();
-            }
-        }else{
-            if(talkButton.getText().equals("Talking!")){
-
-                talkButton.setText("Muted");
-                talkButton.setTextFill(Color.RED);
-
-                sound.mute();
-            }
-        }
-
-        isMuted = !isMuted;
+        sound.mute();
     }
 
     @Override
@@ -98,27 +99,19 @@ public class AppGUIController extends ControllerJFXPanel {
 
         textPane.setMouseTransparent(true);
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(500), actionEvent -> { talk(); }));
-        timeline.setCycleCount(Animation.INDEFINITE);
-
-        Platform.runLater(new Runnable() {
+        appGUI.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
-            public void run() {
-                talkButton.armedProperty().addListener(new ChangeListener<Boolean>() {
-
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                        if( newValue) {
-                            timeline.play();
-                        } else {
-                            timeline.stop();
-                        }
-                    }
-                });
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (JOptionPane.showConfirmDialog(appGUI,
+                        "Are you sure you want to end the call?", "End Call with " + proxy.getText() +  "?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+                    System.out.println("Closing App");
+                    close();
+                }
             }
         });
     }
-
 
     private static ImageView addIconForButton(){
         ImageView image;
