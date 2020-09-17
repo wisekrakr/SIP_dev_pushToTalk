@@ -25,13 +25,21 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Manages a single SIP session
+ * The SipManager provides wrapping of the underlying stack's functionalities.
+ * It also implements the SipListener interface and handles incoming
+ * SIP messages.
+ * Manages a single SIP session.
+ *
+ * @author David Damian Buendia Cosano
  */
 public class SipManager implements SipClient {
     private static final String STACK_NAME = "WiseKrakrSIP";
     //    private static final String STACK_DOMAIN_NAME = "com.wisekrakr";
     private static final int MAX_MESSAGE_SIZE = 1048576;
 
+    /**
+     * Used for the contact header to provide firewall support.
+     */
     private final String localSipAddress;
     private final int localSipPort;
     private final String sipTransport;
@@ -47,12 +55,29 @@ public class SipManager implements SipClient {
     private AuthenticationHelper authenticationHelper;
     private CallIdHeader callId;
 
+    /**
+     * The sipStack instance that handles SIP communications.
+     */
     private SipStack sipStack;
 
+    /**
+     * The JAIN SIP SipProvider instance.
+     */
     private SipProvider sipProvider;
 
+    /**
+     * The HeaderFactory used to create SIP message headers.
+     */
     private HeaderFactory headerFactory;
+
+    /**
+     * The AddressFactory used to create URLs ans Address objects.
+     */
     private AddressFactory addressFactory;
+
+    /**
+     * The Message Factory used to create SIP messages.
+     */
     private MessageFactory messageFactory;
 
     private SipSessionState sipSessionState;
@@ -93,6 +118,10 @@ public class SipManager implements SipClient {
 
         sipSessionState = SipSessionState.IDLE;
 
+        /**
+         * The SipFactory instance used to create the SipStack and the Address
+         * Message and Header Factories.
+         */
         SipFactory sipFactory = SipFactory.getInstance();
         sipFactory.resetFactory();
 //        sipFactory.setPathName(STACK_DOMAIN_NAME);
@@ -122,6 +151,10 @@ public class SipManager implements SipClient {
 
         authenticationHelper = ((SipStackExt) sipStack).getAuthenticationHelper(accountManager, headerFactory);
 
+        /**
+         * The default (and currently the only) SIP listening point of the
+         * application.
+         */
         ListeningPoint udp = sipStack.createListeningPoint(localSipAddress, localSipPort, sipTransport);
 
         sipProvider = sipStack.createSipProvider(udp);
@@ -536,7 +569,8 @@ public class SipManager implements SipClient {
 
         callRequest.addHeader(headerFactory.createContactHeader(addressFactory.createAddress(contactURI)));
 
-        callRequest.setContent(("v=0\r\n" +
+        callRequest.setContent((
+                "v=0\r\n" +
                 "o=- 13760799956958020 13760799956958020" + " IN IP4 " + localSipAddress + "\r\n" +
                 "s=mysession session\r\n" +
                 "c=IN IP4 " + localSipAddress + "\r\n" +
@@ -594,6 +628,8 @@ public class SipManager implements SipClient {
 
         if (content != null) {
             ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("text", "plain");
+            contentTypeHeader.setParameter("charset","UTF-8");
+            headerFactory.createContentLengthHeader(content.toString().length());
             request.setContent(content, contentTypeHeader);
         }
         authenticationHelper.setAuthenticationHeaders(request);

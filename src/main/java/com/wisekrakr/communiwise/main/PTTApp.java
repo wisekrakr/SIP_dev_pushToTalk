@@ -6,11 +6,15 @@ import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
 import com.wisekrakr.communiwise.phone.sip.SipManagerListener;
 import com.wisekrakr.communiwise.user.SipAccountManager;
+import javafx.scene.media.MediaException;
 import org.apache.commons.cli.*;
 
 import javax.sound.sampled.*;
 import java.io.Serializable;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 
 import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
 
@@ -126,6 +130,7 @@ public class PTTApp  implements Serializable {
         }
     }
 
+
     /**
      * Looks for audio devices when no devices have been put in the program arguments.
      * If no devices have been put, then the app stops.
@@ -162,6 +167,7 @@ public class PTTApp  implements Serializable {
                 .addOption("ip", "ipAddress", true, "Your IP Address")
                 .addOption("i", "inputLine", true, "Audio input device for the target data line")
                 .addOption("o", "outputLine", true, "Audio output device for the source data line");
+
 
         CommandLineParser parser = new DefaultParser();
 
