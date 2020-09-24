@@ -94,4 +94,10 @@ public class RTPConnectionManager {
     public DatagramSocket getSocket() {
         return socket;
     }
+    public float getAmplitude(){
+        return transmittingThread.getAmplitude();
+    }
+    public float getPeak(){
+        return transmittingThread.getPeak();
+    }
 }

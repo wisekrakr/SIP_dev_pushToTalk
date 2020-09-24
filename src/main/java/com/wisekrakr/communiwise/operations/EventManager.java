@@ -1,7 +1,6 @@
 package com.wisekrakr.communiwise.operations;
 
-import com.wisekrakr.communiwise.gui.FrameManagerListener;
-import com.wisekrakr.communiwise.gui.fx.AppGUI;
+import com.wisekrakr.communiwise.gui.AppGUI;
 import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
 
@@ -13,7 +12,7 @@ import java.util.Map;
  * This class controls what happens to the GUI
  * It also holds several api's that control basic function of a phone and for audio controls
  */
-public class EventManager implements FrameManagerListener {
+public class EventManager implements EventManagerListener {
 
     private AppGUI appGUI;
     private final SipManager sipManager;
@@ -36,8 +35,6 @@ public class EventManager implements FrameManagerListener {
     @Override
     public void onHangUp() {
         getPhoneApi().hangup();
-
-        appGUI.hideGUI();
     }
 
     /**
@@ -48,7 +45,14 @@ public class EventManager implements FrameManagerListener {
      */
     @Override
     public void onCall(Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress) {
+
         SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Throwable e) {
+                System.out.println("WARNING: unable to set look and feel, will continue");
+            }
+
             appGUI = new AppGUI(this, getSoundApi(), userInfo, proxyName, proxyAddress );
             appGUI.showGUI();
         });
@@ -72,6 +76,15 @@ public class EventManager implements FrameManagerListener {
                 rtpConnectionManager.unmute();
             }
 
+            @Override
+            public float getAmplitude() {
+                return rtpConnectionManager.getAmplitude();
+            }
+
+            @Override
+            public float getPeak() {
+                return rtpConnectionManager.getPeak();
+            }
         };
     }
 

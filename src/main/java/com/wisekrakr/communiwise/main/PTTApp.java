@@ -6,17 +6,13 @@ import com.wisekrakr.communiwise.phone.connections.RTPConnectionManager;
 import com.wisekrakr.communiwise.phone.sip.SipManager;
 import com.wisekrakr.communiwise.phone.sip.SipManagerListener;
 import com.wisekrakr.communiwise.user.SipAccountManager;
-import javafx.scene.media.MediaException;
 import org.apache.commons.cli.*;
 
 import javax.sound.sampled.*;
 import java.io.Serializable;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 
-import static com.wisekrakr.communiwise.gui.SipAddressMaker.make;
+import static com.wisekrakr.communiwise.gui.utilities.SipAddressMaker.make;
 
 public class PTTApp  implements Serializable {
 

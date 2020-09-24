@@ -1,4 +1,4 @@
-package com.wisekrakr.communiwise.gui;
+package com.wisekrakr.communiwise.gui.utilities;
 
 public class SipAddressMaker {
     public static String make(String name, String domain){
