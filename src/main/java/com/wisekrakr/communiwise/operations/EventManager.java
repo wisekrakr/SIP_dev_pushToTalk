@@ -10,16 +10,15 @@ import java.util.Map;
 
 /**
  * This class controls what happens to the GUI
- * It also holds several api's that control basic function of a phone and for audio controls
+ * It also holds several API's that control basic function of a phone and for audio controls.
+ * The GUI(s) that are initialized in this class will use these API's.
  */
-public class EventManager implements EventManagerListener {
+public class EventManager implements EventManagerListener, APIHandler {
 
-    private AppGUI appGUI;
     private final SipManager sipManager;
     private final RTPConnectionManager rtpConnectionManager;
 
     /**
-     *
      * @param sipManager holds all the information and methods of the current sipsession
      * @param rtpConnectionManager  handles the rtp connection and holds both incoming and outgoing audio threads
      */
@@ -30,14 +29,7 @@ public class EventManager implements EventManagerListener {
     }
 
     /**
-     * The App GUI gets destroyed and we send a bye to the proxy
-     */
-    @Override
-    public void onHangUp() {
-        getPhoneApi().hangup();
-    }
-
-    /**
+     * Created by the EventManagerListener.
      * Creates a new AppGUI  {@link AppGUI}
      * @param userInfo current logged in user info (username, domain)
      * @param proxyName the name of the callee
@@ -53,46 +45,17 @@ public class EventManager implements EventManagerListener {
                 System.out.println("WARNING: unable to set look and feel, will continue");
             }
 
-            appGUI = new AppGUI(this, getSoundApi(), userInfo, proxyName, proxyAddress );
+            AppGUI appGUI = new AppGUI(this, userInfo, proxyName, proxyAddress );
             appGUI.showGUI();
         });
     }
 
     /**
-     * Api for easy access to methods that control the audio of the app
-     * @return the sound api
-     */
-    public SoundAPI getSoundApi(){
-
-        return new SoundAPI() {
-
-            @Override
-            public void mute() {
-                rtpConnectionManager.mute();
-            }
-
-            @Override
-            public void unmute() {
-                rtpConnectionManager.unmute();
-            }
-
-            @Override
-            public float getAmplitude() {
-                return rtpConnectionManager.getAmplitude();
-            }
-
-            @Override
-            public float getPeak() {
-                return rtpConnectionManager.getPeak();
-            }
-        };
-    }
-
-    /**
-     * Api for easy access to methods that control basic functions of a phone
+     * Api for easy access for GUI(s) to methods that control basic functions of a phone
      * @return the phone api
      */
-    public PhoneAPI getPhoneApi(){
+    @Override
+    public PhoneAPI getPhone() {
         return new PhoneAPI() {
 
             private String proxyAddress;
@@ -122,4 +85,26 @@ public class EventManager implements EventManagerListener {
             }
         };
     }
+
+    /**
+     * Api for easy access for GUI(s) to methods that control the audio of the app
+     * @return the sound api
+     */
+    @Override
+    public SoundAPI getSound() {
+        return new SoundAPI() {
+
+            @Override
+            public void mute() {
+                rtpConnectionManager.mute();
+            }
+
+            @Override
+            public void unmute() {
+                rtpConnectionManager.unmute();
+            }
+
+        };
+    }
+
 }

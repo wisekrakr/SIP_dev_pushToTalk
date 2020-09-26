@@ -3,7 +3,8 @@ package com.wisekrakr.communiwise.phone.connections;
 import com.wisekrakr.communiwise.phone.connections.threads.ReceptionThread;
 import com.wisekrakr.communiwise.phone.connections.threads.TransmittingThread;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.TargetDataLine;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -94,10 +95,5 @@ public class RTPConnectionManager {
     public DatagramSocket getSocket() {
         return socket;
     }
-    public float getAmplitude(){
-        return transmittingThread.getAmplitude();
-    }
-    public float getPeak(){
-        return transmittingThread.getPeak();
-    }
+
 }

@@ -25,21 +25,11 @@ public class TransmittingThread {
 
     private final G722Encoder g722Encoder = new G722Encoder(2000);
     private boolean isMuted;
-    private float amplitude;
-    private float peak;
 
 
     public TransmittingThread(DatagramSocket socket, TargetDataLine targetDataLine) {
         this.socket = socket;
         this.targetDataLine = targetDataLine;
-    }
-
-    public float getAmplitude() {
-        return amplitude;
-    }
-
-    public float getPeak() {
-        return peak;
     }
 
     public void start() throws IOException {
@@ -52,9 +42,6 @@ public class TransmittingThread {
 
         captureThread = new Thread(() -> {
             byte[] buffer = new byte[BUFFER_SIZE];
-            float[] samples = new float[BUFFER_SIZE / 2];
-
-            float lastPeak = 0f;
 
             try {
                 targetDataLine.start();
@@ -62,36 +49,6 @@ public class TransmittingThread {
                 while (!Thread.currentThread().isInterrupted()) {
 
                     int actuallyRead = targetDataLine.read(buffer, 0, buffer.length);
-
-                    for(int i = 0, s = 0; i < actuallyRead;) {
-                        int sample = 0;
-
-                        sample |= buffer[i++] << 8;
-                        sample |= buffer[i++] & 0xFF;
-
-                        // normalize to range of +/-1.0f
-                        samples[s++] = sample / 32768f;
-                    }
-
-                    amplitude = 0f;
-                    peak = 0f;
-
-                    for(float sample : samples) {
-                        float abs = Math.abs(sample);
-
-                        if(abs > peak) {
-                            peak = abs;
-                        }
-                        amplitude += sample * sample;
-                    }
-
-                    amplitude = (float)Math.sqrt(amplitude / samples.length);
-
-                    if(lastPeak > peak) {
-                        peak = lastPeak * 0.875f;
-                    }
-
-                    lastPeak = peak;
 
                     rawDataOutput.write(buffer, 0, actuallyRead);
 

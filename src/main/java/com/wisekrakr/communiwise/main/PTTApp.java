@@ -177,15 +177,13 @@ public class PTTApp  implements Serializable {
 
     private void initialize(TargetDataLine inputLine, SourceDataLine outputLine, String username, String localAddress, String proxyExtension, String proxyHost, String password) throws Exception {
 
-        //todo ports?
         SipManager sipManager = new SipManager(proxyHost, 5060, localAddress, 5080, "udp").
                 logging("server.log", "debug.log", 16).
                 listener(new SipManagerListener() {
 
-
                     @Override
                     public void onRemoteBye() {
-                        eventManager.onHangUp();
+                        eventManager.getPhone().hangup();
 
                         rtpConnectionManager.stopStreamingAudio();
                     }
@@ -207,12 +205,12 @@ public class PTTApp  implements Serializable {
 
                     @Override
                     public void onLoggedIn() {
-                        eventManager.getPhoneApi().initiateCall(make(proxyExtension,proxyHost));
+                        eventManager.getPhone().initiateCall(make(proxyExtension,proxyHost));
                     }
 
                     @Override
                     public void onCancel() {
-                        eventManager.onHangUp();
+                        eventManager.getPhone().hangup();
                     }
 
                     @Override
@@ -238,7 +236,7 @@ public class PTTApp  implements Serializable {
             realm = proxyHost.substring(0, dot);
         }
 
-        eventManager.getPhoneApi().login(realm, proxyHost, username, password, make(username, proxyHost));
+        eventManager.getPhone().login(realm, proxyHost, username, password, make(username, proxyHost));
 
     }
 }

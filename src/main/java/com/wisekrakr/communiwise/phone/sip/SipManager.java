@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author David Damian Buendia Cosano
  */
 public class SipManager implements SipClient {
-    private static final String STACK_NAME = "WiseKrakrSIP";
+    private static final String STACK_NAME = "WisekrakrSIP";
     //    private static final String STACK_DOMAIN_NAME = "com.wisekrakr";
     private static final int MAX_MESSAGE_SIZE = 1048576;
 
@@ -91,8 +91,6 @@ public class SipManager implements SipClient {
         this.localSipAddress = localSipAddress;
         this.localSipPort = localSipPort;
         this.sipTransport = sipTransport;
-
-
     }
 
     public SipManager listener(SipManagerListener listener) {
@@ -152,8 +150,7 @@ public class SipManager implements SipClient {
         authenticationHelper = ((SipStackExt) sipStack).getAuthenticationHelper(accountManager, headerFactory);
 
         /**
-         * The default (and currently the only) SIP listening point of the
-         * application.
+         * The default (and currently the only) SIP listening point of the application.
          */
         ListeningPoint udp = sipStack.createListeningPoint(localSipAddress, localSipPort, sipTransport);
 
@@ -190,6 +187,7 @@ public class SipManager implements SipClient {
                                 transaction = sipProvider.getNewServerTransaction(request);
                             }
 
+
                             System.out.println("\n\nRequest " + request.getMethod() + " received at " + sipStack.getStackName() + " with server transaction id " + transaction);
 
                             SipURI uri = (SipURI) ((FromHeader) request.getHeader(FromHeader.NAME)).getAddress().getURI();
@@ -221,7 +219,7 @@ public class SipManager implements SipClient {
                                     System.out.println("Process Ack: got an ACK! " + request);
 
                                     if (transaction == null) {
-                                        System.out.println("null server transaction -- ignoring the ACK!");
+                                        System.out.println("No server transaction -- ignoring the ACK!");
                                     } else {
                                         Dialog dialog = transaction.getDialog();
                                         System.out.println("Dialog Created = " + dialog.getDialogId() + " Dialog State = " + dialog.getState());
@@ -251,7 +249,7 @@ public class SipManager implements SipClient {
 
                                     System.out.println("CANCEL received");
                                     if (transaction == null) {
-                                        System.out.println("Process Cancel:  null TID.");
+                                        System.out.println("No server transaction -- ignoring the Cancel!");
                                     } else {
                                         Dialog dialog1 = transaction.getDialog();
                                         System.out.println("Dialog State = " + dialog1.getState());
@@ -260,7 +258,6 @@ public class SipManager implements SipClient {
 
                                         System.out.println("Sending 200 Canceled Request");
                                         System.out.println("Dialog State = " + dialog1.getState());
-
                                     }
 
                                     listener.onRemoteBye();
@@ -272,8 +269,7 @@ public class SipManager implements SipClient {
                             }
 
                         } catch (Throwable t) {
-                            System.out.println("Error while processing request event " + requestEvent);
-                            t.printStackTrace();
+                            throw new IllegalStateException("Error while processing request event " + requestEvent, t);
                         }
                     }
 
@@ -499,7 +495,6 @@ public class SipManager implements SipClient {
         try {
             this.sipProvider.getNewClientTransaction(makeInviteRequest(recipient, localRtpPort)).sendRequest();
         } catch (Throwable e) {
-//            sipSessionState = SipSessionState.READY;
             sipSessionState = SipSessionState.IDLE;
 
             throw new IllegalStateException("Call failed " , e);
@@ -511,7 +506,6 @@ public class SipManager implements SipClient {
 
         try{
             if (sipSessionState == SipSessionState.INCOMING) {
-//                sipProvider.getNewClientTransaction(makeByeRequest(recipient)).sendRequest();
                 makeByeRequest(waitingCall);
 
             }else if(sipSessionState == SipSessionState.OUTGOING){
@@ -593,10 +587,6 @@ public class SipManager implements SipClient {
 
     private CSeqHeader nextRequestSequenceNumber(String method) throws ParseException, InvalidArgumentException {
         return headerFactory.createCSeqHeader(sequenceNumberGenerator.incrementAndGet(), method);
-    }
-
-    private String currentCallTag(){
-        return callId.getCallId().substring(1,12);
     }
 
     public Request createRequest(URI requestURI, Address from, Address to, String method, Object content) throws ParseException, InvalidArgumentException {

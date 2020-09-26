@@ -26,15 +26,13 @@ public class AppGUI extends JFrame {
 
     private final EventManager eventManager;
     private final Map<String, String> userInfo;
-    private final SoundAPI sound;
     private final String proxyName;
     private final InetSocketAddress proxyAddress;
 
 
-    public AppGUI(EventManager eventManager, SoundAPI sound, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress){
+    public AppGUI(EventManager eventManager, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress){
         this.eventManager = eventManager;
         this.userInfo = userInfo;
-        this.sound = sound;
         this.proxyName = proxyName;
         this.proxyAddress = proxyAddress;
     }
@@ -60,7 +58,7 @@ public class AppGUI extends JFrame {
                         JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
                     System.out.println("Closing App");
 
-                    eventManager.onHangUp();
+                    eventManager.getPhone().hangup();
                 }
             }
         });
@@ -123,17 +121,19 @@ public class AppGUI extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 talkButton.setText("TALKING!");
-                talkButton.setForeground(new Color(12, 125, 20));
+                talkButton.setBackground(new Color(12, 125, 20));
+                talkButton.setForeground(LIGHT_CYAN);
 
-                sound.unmute();
+                eventManager.getSound().unmute();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 talkButton.setText("PUSH TO TALK");
-                talkButton.setForeground(new Color(161, 21, 21));
+                talkButton.setBackground(new Color(161, 21, 21));
+                talkButton.setForeground(LIGHT_CYAN);
 
-                sound.mute();
+                eventManager.getSound().mute();
             }
         });
 
