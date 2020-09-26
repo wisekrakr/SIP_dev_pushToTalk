@@ -28,7 +28,6 @@ public class AppGUI extends JFrame {
     private final String proxyName;
     private final InetSocketAddress proxyAddress;
 
-
     public AppGUI(EventManager eventManager, Map<String, String> userInfo, String proxyName, InetSocketAddress proxyAddress){
         this.eventManager = eventManager;
         this.userInfo = userInfo;
@@ -67,9 +66,9 @@ public class AppGUI extends JFrame {
 
         JPanel centerPanel = new JPanel(new FlowLayout());
         centerPanel.setBorder(new EmptyBorder(2,10,2,10));
+
         JLabel time = new JLabel();
         centerPanel.add(time);
-
         add(centerPanel, BorderLayout.CENTER);
 
         CallTimer callTimer = new CallTimer(time);

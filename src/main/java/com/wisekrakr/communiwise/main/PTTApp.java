@@ -61,15 +61,17 @@ public class PTTApp  implements Serializable {
 
             if (inputLine == null) {
 
-                formatter.printHelp("Input line not found " , options);
                 dataLineNotThere(cmd, "i",  options,mixers, formatter);
+                formatter.printHelp("No input device enabled " , options);
+                printSoundDevices(mixers);
 
                 System.exit(1);
             }
             if (outputLine == null) {
 
-                formatter.printHelp("Output line not found " ,options);
                 dataLineNotThere(cmd, "o",  options,mixers, formatter);
+                formatter.printHelp("No output device enabled  " ,options);
+                printSoundDevices(mixers);
 
                 System.exit(1);
             }
@@ -126,6 +128,13 @@ public class PTTApp  implements Serializable {
         }
     }
 
+    private static void printSoundDevices(Mixer.Info[] mixers){
+        System.out.println("Available devices: ");
+        for (int i = 0; i < mixers.length; i++) {
+            System.out.println(String.format("%-50s %50s %30s %30s", mixers[i].getName(), mixers[i].getDescription(), mixers[i].getVersion(), mixers[i].getVendor()));
+
+        }
+    }
 
     /**
      * Looks for audio devices when no devices have been put in the program arguments.
@@ -146,10 +155,7 @@ public class PTTApp  implements Serializable {
                 formatter.printHelp("Output device must be assigned", options);
             }
 
-            System.out.println("Available devices: ");
-            for (int i = 0; i < mixers.length; i++) {
-                System.out.println(String.format("%-50s %50s %30s %30s", mixers[i].getName(), mixers[i].getDescription(), mixers[i].getVersion(), mixers[i].getVendor()));
-            }
+            printSoundDevices(mixers);
             System.exit(1);
         }
     }
