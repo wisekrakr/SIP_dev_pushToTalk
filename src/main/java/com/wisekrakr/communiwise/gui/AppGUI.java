@@ -2,7 +2,6 @@ package com.wisekrakr.communiwise.gui;
 
 import com.wisekrakr.communiwise.gui.utilities.CallTimer;
 import com.wisekrakr.communiwise.operations.EventManager;
-import com.wisekrakr.communiwise.operations.SoundAPI;
 import com.wisekrakr.communiwise.user.SipAccountManager;
 
 import javax.swing.*;
@@ -42,7 +41,7 @@ public class AppGUI extends JFrame {
         setResizable(false);
 
         setBounds(screenSize.width + DESIRED_WIDTH, screenSize.height, DESIRED_WIDTH, DESIRED_HEIGHT);
-
+        setFocusable(true);
         setLocationRelativeTo(null);
 
         /**
@@ -115,14 +114,14 @@ public class AppGUI extends JFrame {
         JButton talkButton = new JButton("PUSH TO TALK");
         talkButton.setPreferredSize(new Dimension(getWidth(), DESIRED_HEIGHT/2));
         talkButton.setFont(new Font("Filmotype Meredith", Font.BOLD, 30));
+        talkButton.setSelected(true);
         buttonPanel.add(talkButton);
 
         talkButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 talkButton.setText("TALKING!");
-                talkButton.setBackground(new Color(12, 125, 20));
-                talkButton.setForeground(LIGHT_CYAN);
+                talkButton.setForeground(new Color(12, 125, 20));
 
                 eventManager.getSound().unmute();
             }
@@ -130,12 +129,13 @@ public class AppGUI extends JFrame {
             @Override
             public void mouseReleased(MouseEvent e) {
                 talkButton.setText("PUSH TO TALK");
-                talkButton.setBackground(new Color(161, 21, 21));
-                talkButton.setForeground(LIGHT_CYAN);
+                talkButton.setForeground(new Color(161, 21, 21));
 
                 eventManager.getSound().mute();
             }
         });
+
+
 
         return buttonPanel;
     }
