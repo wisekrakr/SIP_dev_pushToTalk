@@ -15,7 +15,7 @@
             
 
 An open source sip phone with push to talk capabilities.
-CommUniWise provides an object-oriented JavaScript API for embedding
+CommUniWise provides an object-oriented Java API for embedding
 two-way audio. This is a pure client-side solution and requires zero 
 server-side logic on your part.
 
